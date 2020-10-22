@@ -1,0 +1,9 @@
+parameters:
+    bootstrapFiles:
+        - tests/bootstrap.php
+    customRulesetUsed: false
+    level: max
+    paths:
+        - admin
+        - classes
+        - orbis-siteground.php

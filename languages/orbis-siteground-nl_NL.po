@@ -1,0 +1,69 @@
+# Copyright (C) 2020 Pronamic
+# This file is distributed under the GPL-3.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Orbis SiteGround 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-orbis-"
+"siteground\n"
+"POT-Creation-Date: 2020-10-22 19:32:23+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2020-10-22 21:34+0200\n"
+"Language-Team: \n"
+"X-Generator: Poedit 2.4.1\n"
+"Last-Translator: Reüel van der Steege <reuel@pronamic.nl>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: nl\n"
+
+#: admin/page-orbis-siteground.php:23
+msgid "Upload SiteGround data"
+msgstr "SiteGround-gegevens uploaden"
+
+#: admin/page-orbis-siteground.php:42
+msgid "Select SiteGround `services-hosting-accounts.json` file"
+msgstr "Selecteer het bestand `services-hosting-accounts.json` van SiteGround"
+
+#: admin/page-orbis-siteground.php:44
+msgid "Select file"
+msgstr "Selecteer bestand"
+
+#: admin/page-orbis-siteground.php:79
+msgid "Name"
+msgstr "Naam"
+
+#: admin/page-orbis-siteground.php:80
+msgid "Orbis"
+msgstr "Orbis"
+
+#: admin/page-orbis-siteground.php:81 classes/orbis-siteground-admin.php:55
+msgid "SiteGround"
+msgstr "SiteGround"
+
+#: admin/page-orbis-siteground.php:82
+msgid "Status"
+msgstr "Status"
+
+#. Plugin Name of the plugin/theme
+msgid "Orbis SiteGround"
+msgstr "Orbis SiteGround"
+
+#. Plugin URI of the plugin/theme
+msgid "https://www.orbiswp.com/"
+msgstr "https://www.orbiswp.com/"
+
+#. Description of the plugin/theme
+msgid ""
+"The Orbis SiteGround plugin compares hosting packages domains against Orbis "
+"subscriptions."
+msgstr ""
+"De Orbis SiteGround-plug-in vergelijkt domeinnamen van hostingpakketten met "
+"Orbis-abonnementen."
+
+#. Author of the plugin/theme
+msgid "Pronamic"
+msgstr "Pronamic"
+
+#. Author URI of the plugin/theme
+msgid "https://www.pronamic.eu/"
+msgstr "https://www.pronamic.eu/"
