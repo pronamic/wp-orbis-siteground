@@ -95,12 +95,7 @@ endif;
 						<td>
 							<?php
 
-							$dashicon = isset( $orbis_subscriptions[ $name ] ) ? 'yes' : 'no';
-
-							printf(
-								'<span class="dashicons dashicons-%s"></span>',
-								esc_html( $dashicon )
-							);
+							echo esc_html( isset( $orbis_subscriptions[ $name ] ) ? '✅' : '❌' );
 
 							?>
 						</td>
@@ -114,12 +109,7 @@ endif;
 								'expiring soon',
 							);
 
-							$dashicon = null !== $item && in_array( $item->status, $active_statuses, true ) ? 'yes' : 'no';
-
-							printf(
-								'<span class="dashicons dashicons-%s"></span>',
-								esc_html( $dashicon )
-							);
+							echo esc_html( null !== $item && in_array( $item->status, $active_statuses, true ) ? '✅' : '❌' );
 
 							?>
 						</td>
