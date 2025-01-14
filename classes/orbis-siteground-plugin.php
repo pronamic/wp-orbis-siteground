@@ -71,12 +71,12 @@ class Orbis_SiteGround_Plugin extends Orbis_Plugin {
 					FROM
 						$wpdb->orbis_subscriptions AS subscription
 							LEFT JOIN
-						$wpdb->orbis_subscription_products AS product
-								ON subscription.type_id = product.id
+						$wpdb->orbis_products AS product
+								ON subscription.product_id = product.id
 					WHERE
 						subscription.cancel_date IS NULL
 							AND
-						product.name LIKE %s OR product.name LIKE %s
+						( product.name LIKE %s OR product.name LIKE %s )
 					;
 				",
 				'Hosting%',
