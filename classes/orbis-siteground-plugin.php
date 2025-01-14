@@ -62,19 +62,21 @@ class Orbis_SiteGround_Plugin extends Orbis_Plugin {
 
 		$subscriptions = array();
 
-		// Query.
 		$results = $wpdb->get_results(
 			$wpdb->prepare(
 				"
 					SELECT
-						subscription.name AS subscription_name
+						subscription.id,
+						subscription.name,
+						subscription.expiration_date,
+						subscription.cancel_date
 					FROM
 						$wpdb->orbis_subscriptions AS subscription
 							LEFT JOIN
 						$wpdb->orbis_products AS product
 								ON subscription.product_id = product.id
 					WHERE
-						subscription.cancel_date IS NULL
+						subscription.expiration_date > NOW()
 							AND
 						( product.name LIKE %s OR product.name LIKE %s )
 					;
@@ -84,13 +86,12 @@ class Orbis_SiteGround_Plugin extends Orbis_Plugin {
 			)
 		);
 
-		// Loop subscriptions.
 		foreach ( $results as $result ) {
-			if ( ! isset( $subscriptions[ $result->subscription_name ] ) ) {
-				$subscriptions[ $result->subscription_name ] = array();
+			if ( ! isset( $subscriptions[ $result->name ] ) ) {
+				$subscriptions[ $result->name ] = array();
 			}
 
-			$subscriptions[ $result->subscription_name ][] = $result;
+			$subscriptions[ $result->name ][] = $result;
 		}
 
 		return $subscriptions;
