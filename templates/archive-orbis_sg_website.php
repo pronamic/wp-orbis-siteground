@@ -37,6 +37,7 @@ $siteground_websites = Plugin::instance()->websites->get_by_post_ids( \wp_list_p
 						<th><?php \esc_html_e( 'Status', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'CMS', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Server', 'orbis-siteground' ); ?></th>
+						<th><?php \esc_html_e( 'SiteGround', 'orbis-siteground' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -58,7 +59,7 @@ $siteground_websites = Plugin::instance()->websites->get_by_post_ids( \wp_list_p
 
 							<?php if ( null === $website ) : ?>
 
-								<td colspan="4"></td>
+								<td colspan="5"></td>
 
 							<?php else : ?>
 
@@ -73,6 +74,9 @@ $siteground_websites = Plugin::instance()->websites->get_by_post_ids( \wp_list_p
 								</td>
 								<td>
 									<?php echo \esc_html( (string) ( $website->server_location ?? $website->datacenter_name ) ); ?>
+								</td>
+								<td>
+									<?php Helpers::render_website_siteground_links( $website ); ?>
 								</td>
 
 							<?php endif; ?>

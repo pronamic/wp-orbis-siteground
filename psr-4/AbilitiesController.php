@@ -82,11 +82,39 @@ final readonly class AbilitiesController {
 			'type' => [ 'string', 'null' ],
 		];
 
+		$link = [
+			'type'       => 'object',
+			'properties' => [
+				'href'  => [ 'type' => 'string' ],
+				'title' => [ 'type' => 'string' ],
+			],
+		];
+
+		$account_links = [
+			'type'        => 'object',
+			'description' => \__( 'HAL links of the account. Each link has an href and a title that describes what the link is for.', 'orbis-siteground' ),
+			'properties'  => [
+				'self'               => $link,
+				'siteground-hosting' => $link,
+			],
+		];
+
+		$website_links = [
+			'type'        => 'object',
+			'description' => \__( 'HAL links of the website. Each link has an href and a title that describes what the link is for.', 'orbis-siteground' ),
+			'properties'  => [
+				'self'                  => $link,
+				'siteground-website'    => $link,
+				'siteground-site-tools' => $link,
+				'admin'                 => $link,
+			],
+		];
+
 		\wp_register_ability(
 			'orbis-siteground/search-accounts',
 			[
 				'label'               => \__( 'Search SiteGround accounts', 'orbis-siteground' ),
-				'description'         => \__( 'Searches the SiteGround hosting accounts (one account per website/domain) that are imported into Orbis and returns their status, plan, server and expiration and billing dates. Accounts that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC.', 'orbis-siteground' ),
+				'description'         => \__( 'Searches the SiteGround hosting accounts (one account per website/domain) that are imported into Orbis and returns their status, plan, server and expiration and billing dates. Accounts that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC. The _links of each account point to the Orbis page and to the hosting account in the SiteGround Client Area (my.siteground.com).', 'orbis-siteground' ),
 				'category'            => 'orbis-siteground',
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -148,9 +176,9 @@ final readonly class AbilitiesController {
 							'items' => [
 								'type'       => 'object',
 								'properties' => [
+									'_links'            => $account_links,
 									'id'                => [ 'type' => 'integer' ],
 									'post_id'           => [ 'type' => [ 'integer', 'null' ] ],
-									'url'               => $nullable_string,
 									'siteground_id'     => [ 'type' => 'string' ],
 									'name'              => [ 'type' => 'string' ],
 									'status'            => [ 'type' => 'string' ],
@@ -195,7 +223,7 @@ final readonly class AbilitiesController {
 			'orbis-siteground/search-websites',
 			[
 				'label'               => \__( 'Search SiteGround websites', 'orbis-siteground' ),
-				'description'         => \__( 'Searches the SiteGround websites that are imported into Orbis and returns their domain, SiteGround account, status, CMS and server. One SiteGround account can host several websites. Websites that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC.', 'orbis-siteground' ),
+				'description'         => \__( 'Searches the SiteGround websites that are imported into Orbis and returns their domain, SiteGround account, status, CMS and server. One SiteGround account can host several websites. Websites that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC. SiteGround has two environments: the Client Area (my.siteground.com) for the SiteGround account, services, billing and websites, and Site Tools (tools.siteground.com) for managing a single website (files, databases, email, DNS, SSL, caching, backups and WordPress). The _links of each website point to the Orbis page, the website in the SiteGround Client Area, the Site Tools and the CMS admin.', 'orbis-siteground' ),
 				'category'            => 'orbis-siteground',
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -251,25 +279,24 @@ final readonly class AbilitiesController {
 							'items' => [
 								'type'       => 'object',
 								'properties' => [
+									'_links'        => $website_links,
 									'id'            => [ 'type' => 'integer' ],
 									'post_id'       => [ 'type' => [ 'integer', 'null' ] ],
-									'url'           => $nullable_string,
 									'siteground_id' => [ 'type' => 'string' ],
 									'domain'        => [ 'type' => 'string' ],
 									'account'       => [
 										'type'       => 'object',
 										'properties' => [
+											'_links'    => $account_links,
 											'siteground_id' => $nullable_string,
 											'name'      => $nullable_string,
 											'post_id'   => [ 'type' => [ 'integer', 'null' ] ],
-											'url'       => $nullable_string,
 											'status'    => $nullable_string,
 											'plan_type' => $nullable_string,
 										],
 									],
 									'status'        => [ 'type' => 'string' ],
 									'cms'           => $nullable_string,
-									'admin_url'     => $nullable_string,
 									'server'        => [
 										'type'       => [ 'object', 'null' ],
 										'properties' => [
@@ -335,9 +362,9 @@ final readonly class AbilitiesController {
 		$post_id = null === $row->post_id ? null : (int) $row->post_id;
 
 		return [
+			'_links'            => $this->get_account_links( $row->siteground_id, $post_id ),
 			'id'                => (int) $row->id,
 			'post_id'           => $post_id,
-			'url'               => null === $post_id ? null : (string) \get_permalink( $post_id ),
 			'siteground_id'     => $row->siteground_id,
 			'name'              => $row->name,
 			'status'            => $row->status,
@@ -355,6 +382,33 @@ final readonly class AbilitiesController {
 			'last_seen_at'      => $row->last_seen_at,
 			'removed_at'        => $row->removed_at,
 		];
+	}
+
+	/**
+	 * Get the HAL links of an account.
+	 *
+	 * @param string|null $siteground_id SiteGround account ID.
+	 * @param int|null    $post_id       Post ID.
+	 * @return array<string, array{href: string, title: string}>
+	 */
+	private function get_account_links( ?string $siteground_id, ?int $post_id ): array {
+		$links = [];
+
+		if ( null !== $post_id ) {
+			$links['self'] = [
+				'href'  => (string) \get_permalink( $post_id ),
+				'title' => \__( 'Orbis page of this SiteGround account.', 'orbis-siteground' ),
+			];
+		}
+
+		if ( null !== $siteground_id ) {
+			$links['siteground-hosting'] = [
+				'href'  => Helpers::get_client_area_account_url( $siteground_id ),
+				'title' => \__( 'This hosting account in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for the hosting plan, renewal and billing.', 'orbis-siteground' ),
+			];
+		}
+
+		return $links;
 	}
 
 	/**
@@ -390,23 +444,48 @@ final readonly class AbilitiesController {
 		$post_id         = null === $row->post_id ? null : (int) $row->post_id;
 		$account_post_id = null === $row->account_post_id ? null : (int) $row->account_post_id;
 
+		$links = [];
+
+		if ( null !== $post_id ) {
+			$links['self'] = [
+				'href'  => (string) \get_permalink( $post_id ),
+				'title' => \__( 'Orbis page of this SiteGround website.', 'orbis-siteground' ),
+			];
+		}
+
+		$links['siteground-website'] = [
+			'href'  => Helpers::get_client_area_website_url( $row->siteground_id ),
+			'title' => \__( 'This website in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for websites, services and billing.', 'orbis-siteground' ),
+		];
+
+		$links['siteground-site-tools'] = [
+			'href'  => Helpers::get_site_tools_url( $row->siteground_id ),
+			'title' => \__( 'SiteGround Site Tools (tools.siteground.com) of this website, the environment for managing the website itself: files, databases, email, DNS, SSL, caching, backups and WordPress.', 'orbis-siteground' ),
+		];
+
+		if ( null !== $row->admin_url ) {
+			$links['admin'] = [
+				'href'  => $row->admin_url,
+				'title' => \__( 'Admin dashboard of the CMS of this website, for example the WordPress admin.', 'orbis-siteground' ),
+			];
+		}
+
 		return [
+			'_links'        => $links,
 			'id'            => (int) $row->id,
 			'post_id'       => $post_id,
-			'url'           => null === $post_id ? null : (string) \get_permalink( $post_id ),
 			'siteground_id' => $row->siteground_id,
 			'domain'        => $row->domain,
 			'account'       => [
+				'_links'        => $this->get_account_links( $row->account_siteground_id, $account_post_id ),
 				'siteground_id' => $row->account_siteground_id,
 				'name'          => $row->account_name,
 				'post_id'       => $account_post_id,
-				'url'           => null === $account_post_id ? null : (string) \get_permalink( $account_post_id ),
 				'status'        => $row->account_status,
 				'plan_type'     => $row->account_type,
 			],
 			'status'        => $row->status,
 			'cms'           => $row->cms,
-			'admin_url'     => $row->admin_url,
 			'server'        => $server,
 			'datacenter'    => $row->datacenter_name,
 			'created'       => $row->siteground_created_at,

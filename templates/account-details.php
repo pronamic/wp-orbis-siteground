@@ -66,6 +66,11 @@ $items = \array_filter(
 					<?php Helpers::render_status_badges( $account, 'theme' ); ?>
 				</dd>
 
+				<dt><?php \esc_html_e( 'SiteGround', 'orbis-siteground' ); ?></dt>
+				<dd>
+					<?php Helpers::render_account_siteground_link( $account ); ?>
+				</dd>
+
 				<?php foreach ( $items as $label => $value ) : ?>
 
 					<dt><?php echo \esc_html( $label ); ?></dt>

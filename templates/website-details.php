@@ -49,6 +49,11 @@ $items = \array_filter(
 					<?php Helpers::render_website_account_link( $website ); ?>
 				</dd>
 
+				<dt><?php \esc_html_e( 'SiteGround', 'orbis-siteground' ); ?></dt>
+				<dd>
+					<?php Helpers::render_website_siteground_links( $website ); ?>
+				</dd>
+
 				<?php if ( null !== $website->admin_url ) : ?>
 
 					<dt><?php \esc_html_e( 'Admin URL', 'orbis-siteground' ); ?></dt>

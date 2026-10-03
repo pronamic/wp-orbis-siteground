@@ -149,6 +149,66 @@ final class Helpers {
 	}
 
 	/**
+	 * Get the URL of a hosting account in the SiteGround Client Area.
+	 *
+	 * @param string $siteground_id SiteGround account ID.
+	 * @return string
+	 */
+	public static function get_client_area_account_url( string $siteground_id ): string {
+		return 'https://my.siteground.com/services/hosting/' . \rawurlencode( $siteground_id );
+	}
+
+	/**
+	 * Get the URL of a website in the SiteGround Client Area.
+	 *
+	 * @param string $siteground_id SiteGround website ID.
+	 * @return string
+	 */
+	public static function get_client_area_website_url( string $siteground_id ): string {
+		return 'https://my.siteground.com/websites/list/' . \rawurlencode( $siteground_id );
+	}
+
+	/**
+	 * Get the URL of the SiteGround Site Tools of a website.
+	 *
+	 * @param string $siteground_id SiteGround website ID.
+	 * @return string
+	 */
+	public static function get_site_tools_url( string $siteground_id ): string {
+		return 'https://tools.siteground.com/dashboard?siteId=' . \rawurlencode( $siteground_id );
+	}
+
+	/**
+	 * Render the SiteGround links of a website.
+	 *
+	 * @param object $website Website.
+	 * @return void
+	 */
+	public static function render_website_siteground_links( object $website ): void {
+		\printf(
+			'<a href="%s">%s</a> · <a href="%s">%s</a>',
+			\esc_url( self::get_client_area_website_url( $website->siteground_id ) ),
+			\esc_html__( 'Client Area', 'orbis-siteground' ),
+			\esc_url( self::get_site_tools_url( $website->siteground_id ) ),
+			\esc_html__( 'Site Tools', 'orbis-siteground' )
+		);
+	}
+
+	/**
+	 * Render the SiteGround link of an account.
+	 *
+	 * @param object $account Account.
+	 * @return void
+	 */
+	public static function render_account_siteground_link( object $account ): void {
+		\printf(
+			'<a href="%s">%s</a>',
+			\esc_url( self::get_client_area_account_url( $account->siteground_id ) ),
+			\esc_html__( 'Client Area', 'orbis-siteground' )
+		);
+	}
+
+	/**
 	 * Render a link to the SiteGround account of a website.
 	 *
 	 * Falls back to the account name when the account is not imported.
