@@ -77,6 +77,7 @@ final class Plugin {
 
 		( new PostTypeController() )->setup();
 		( new ImportController( $this ) )->setup();
+		( new InvoiceUploadController( $this ) )->setup();
 		( new TemplateController( $this ) )->setup();
 		( new AbilitiesController( $this ) )->setup();
 
@@ -118,18 +119,57 @@ final class Plugin {
 	 * @return void
 	 */
 	private function maybe_install(): void {
-		if ( '2.2.0' === \get_option( 'orbis_siteground_db_version' ) ) {
+		$db_version = \get_option( 'orbis_siteground_db_version' );
+
+		if ( '2.3.0' === $db_version ) {
 			return;
 		}
 
 		$this->install();
+
+		if ( '2.2.0' === $db_version ) {
+			$this->upgrade_invoices_220();
+		}
 
 		\flush_rewrite_rules();
 
 		// The last import is stored per import type since version 2.1.0.
 		\delete_option( 'orbis_siteground_last_import' );
 
-		\update_option( 'orbis_siteground_db_version', '2.2.0' );
+		\update_option( 'orbis_siteground_db_version', '2.3.0' );
+	}
+
+	/**
+	 * Upgrade the invoices table of version 2.2.0.
+	 *
+	 * Since version 2.3.0 invoices are created by the PDF upload, before the
+	 * invoice data is known, so the invoice columns are nullable. `dbDelta`
+	 * does not change the nullability of existing columns.
+	 *
+	 * @return void
+	 */
+	private function upgrade_invoices_220(): void {
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange -- `dbDelta` does not change the nullability of existing columns.
+		$wpdb->query(
+			"
+			ALTER TABLE $wpdb->orbis_siteground_invoices
+				MODIFY invoice_number VARCHAR(64) DEFAULT NULL,
+				MODIFY document_type VARCHAR(32) DEFAULT NULL,
+				MODIFY invoice_date DATE DEFAULT NULL,
+				MODIFY currency CHAR(3) DEFAULT NULL,
+				MODIFY subtotal DECIMAL(12,2) DEFAULT NULL,
+				MODIFY vat_amount DECIMAL(12,2) DEFAULT NULL,
+				MODIFY total DECIMAL(12,2) DEFAULT NULL,
+				MODIFY data LONGTEXT DEFAULT NULL
+			;
+			"
+		);
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
+
+		// Invoices of version 2.2.0 were uploaded together with the invoice data.
+		$wpdb->query( "UPDATE $wpdb->orbis_siteground_invoices SET processed_at = updated_at WHERE processed_at IS NULL AND data IS NOT NULL;" );
 	}
 
 	/**
@@ -213,25 +253,29 @@ final class Plugin {
 				created_at DATETIME NOT NULL,
 				updated_at DATETIME NOT NULL,
 				post_id BIGINT(20) UNSIGNED DEFAULT NULL,
-				invoice_number VARCHAR(64) NOT NULL,
-				document_type VARCHAR(32) NOT NULL,
-				invoice_date DATE NOT NULL,
-				currency CHAR(3) NOT NULL,
-				payment_method VARCHAR(64) DEFAULT NULL,
-				subtotal DECIMAL(12,2) NOT NULL,
-				vat_amount DECIMAL(12,2) NOT NULL,
-				total DECIMAL(12,2) NOT NULL,
-				tax_scheme VARCHAR(32) DEFAULT NULL,
-				file_path VARCHAR(255) NOT NULL,
-				file_name VARCHAR(191) DEFAULT NULL,
-				file_size INT(10) UNSIGNED NOT NULL,
+				user_id BIGINT(20) UNSIGNED DEFAULT NULL,
 				file_sha256 CHAR(64) NOT NULL,
-				data LONGTEXT NOT NULL,
+				file_path VARCHAR(255) NOT NULL,
+				file_name VARCHAR(191) NOT NULL,
+				file_size INT(10) UNSIGNED NOT NULL,
+				text LONGTEXT DEFAULT NULL,
+				invoice_number VARCHAR(64) DEFAULT NULL,
+				document_type VARCHAR(32) DEFAULT NULL,
+				invoice_date DATE DEFAULT NULL,
+				currency CHAR(3) DEFAULT NULL,
+				payment_method VARCHAR(64) DEFAULT NULL,
+				subtotal DECIMAL(12,2) DEFAULT NULL,
+				vat_amount DECIMAL(12,2) DEFAULT NULL,
+				total DECIMAL(12,2) DEFAULT NULL,
+				tax_scheme VARCHAR(32) DEFAULT NULL,
+				data LONGTEXT DEFAULT NULL,
+				processed_at DATETIME DEFAULT NULL,
 				PRIMARY KEY  (id),
+				UNIQUE KEY file_sha256 (file_sha256),
 				UNIQUE KEY invoice_number (invoice_number),
 				UNIQUE KEY post_id (post_id),
 				KEY invoice_date (invoice_date),
-				KEY total (total)
+				KEY processed_at (processed_at)
 			) $charset_collate;
 			SQL;
 

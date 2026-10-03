@@ -58,7 +58,8 @@ final readonly class AbilitiesController {
 		$tools[] = 'orbis-siteground/search-accounts';
 		$tools[] = 'orbis-siteground/search-websites';
 		$tools[] = 'orbis-siteground/search-invoices';
-		$tools[] = 'orbis-siteground/upload-invoice';
+		$tools[] = 'orbis-siteground/get-invoice';
+		$tools[] = 'orbis-siteground/update-invoice';
 
 		return $tools;
 	}
@@ -345,63 +346,61 @@ final readonly class AbilitiesController {
 
 		$invoice_schema = JsonSchema::load( 'siteground-invoice' );
 
-		\wp_register_ability(
-			'orbis-siteground/upload-invoice',
-			[
-				'label'               => \__( 'Upload SiteGround invoice', 'orbis-siteground' ),
-				'description'         => \__( 'Uploads a SiteGround invoice PDF together with the structured invoice data to Orbis. SiteGround only provides invoices as PDF: first read the PDF and extract the data exactly according to the invoice schema (copy values literally, use null for values that are not on the PDF and never guess), then pass the data as invoice and the original PDF file as base64 encoded pdf. The PDF is stored in a protected directory. Uploading an invoice with an existing invoice number replaces the stored data and PDF of that invoice.', 'orbis-siteground' ),
-				'category'            => 'orbis-siteground',
-				'input_schema'        => [
-					'type'                 => 'object',
-					'properties'           => [
-						'invoice'   => $invoice_schema,
-						'pdf'       => [
-							'type'        => 'string',
-							'description' => \__( 'The original invoice PDF file, base64 encoded (maximum 10 MB).', 'orbis-siteground' ),
-							'minLength'   => 1,
-						],
-						'file_name' => [
-							'type'        => 'string',
-							'description' => \__( 'Original file name of the PDF, for example invoice-4869562.pdf.', 'orbis-siteground' ),
-						],
-					],
-					'required'             => [ 'invoice', 'pdf' ],
-					'additionalProperties' => false,
-				],
-				'output_schema'       => [
-					'type'       => 'object',
-					'properties' => [
-						'_links'         => $invoice_links,
-						'id'             => [ 'type' => 'integer' ],
-						'post_id'        => [ 'type' => [ 'integer', 'null' ] ],
-						'created'        => [
-							'type'        => 'boolean',
-							'description' => \__( 'True when the invoice is new, false when an existing invoice was replaced.', 'orbis-siteground' ),
-						],
-						'invoice_number' => [ 'type' => 'string' ],
-						'invoice_date'   => [ 'type' => 'string' ],
-						'currency'       => [ 'type' => 'string' ],
-						'total'          => [ 'type' => 'number' ],
-					],
-				],
-				'execute_callback'    => $this->upload_invoice( ... ),
-				'permission_callback' => fn() => \current_user_can( 'manage_options' ),
-				'meta'                => [
-					'show_in_rest' => true,
-					'annotations'  => [
-						'readonly'    => false,
-						'destructive' => false,
-						'idempotent'  => true,
-					],
-				],
-			]
-		);
+		/**
+		 * Unprocessed invoices have no line items yet, so the minimum of
+		 * the invoice schema only applies to the input of update-invoice.
+		 * The line item definition is inlined because the output schemas
+		 * have no `$defs` to resolve the reference against.
+		 */
+		$line_items_schema = $invoice_schema['properties']['line_items'] ?? [ 'type' => 'array' ];
+
+		unset( $line_items_schema['minItems'] );
+
+		if ( isset( $invoice_schema['$defs']['line_item'] ) ) {
+			$line_items_schema['items'] = $invoice_schema['$defs']['line_item'];
+		}
+
+		$nullable_number = [
+			'type' => [ 'number', 'null' ],
+		];
+
+		$invoice_properties = [
+			'_links'         => $invoice_links,
+			'id'             => [ 'type' => 'integer' ],
+			'post_id'        => [ 'type' => [ 'integer', 'null' ] ],
+			'status'         => [
+				'type'        => 'string',
+				'description' => \__( 'Unprocessed when the invoice data has not been registered yet with the update-invoice ability, processed otherwise.', 'orbis-siteground' ),
+				'enum'        => [ 'unprocessed', 'processed' ],
+			],
+			'file_name'      => [ 'type' => 'string' ],
+			'file_size'      => [ 'type' => 'integer' ],
+			'file_sha256'    => [ 'type' => 'string' ],
+			'uploaded_at'    => [ 'type' => 'string' ],
+			'processed_at'   => $nullable_string,
+			'invoice_number' => $nullable_string,
+			'document_type'  => $nullable_string,
+			'invoice_date'   => $nullable_string,
+			'currency'       => $nullable_string,
+			'payment_method' => $nullable_string,
+			'subtotal'       => $nullable_number,
+			'vat_amount'     => $nullable_number,
+			'total'          => $nullable_number,
+			'tax_scheme'     => $nullable_string,
+			'line_items'     => $line_items_schema,
+		];
+
+		$invoice_id = [
+			'type'        => 'integer',
+			'description' => \__( 'Orbis ID of the SiteGround invoice (id of the search-invoices ability).', 'orbis-siteground' ),
+			'minimum'     => 1,
+		];
 
 		\wp_register_ability(
 			'orbis-siteground/search-invoices',
 			[
 				'label'               => \__( 'Search SiteGround invoices', 'orbis-siteground' ),
-				'description'         => \__( 'Searches the SiteGround invoices that are uploaded to Orbis, newest first, and returns the invoice totals and lines. Amounts are decimal numbers in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF.', 'orbis-siteground' ),
+				'description'         => \__( 'Searches the SiteGround invoice PDFs that are uploaded to Orbis, unprocessed invoices first and then newest first. An unprocessed invoice is a PDF that has been uploaded but whose data has not been registered yet: read it with the get-invoice ability and register the data with the update-invoice ability. Amounts are decimal numbers in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF.', 'orbis-siteground' ),
 				'category'            => 'orbis-siteground',
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -409,7 +408,13 @@ final readonly class AbilitiesController {
 					'properties'           => [
 						'search'      => [
 							'type'        => 'string',
-							'description' => \__( 'Search term, matched against the invoice number and all invoice data, for example a domain name or product of an invoice line.', 'orbis-siteground' ),
+							'description' => \__( 'Search term, matched against the invoice number, the file name and all invoice data, for example a domain name or product of an invoice line.', 'orbis-siteground' ),
+						],
+						'status'      => [
+							'type'        => 'string',
+							'description' => \__( 'Limit the results to unprocessed or processed invoices.', 'orbis-siteground' ),
+							'enum'        => [ 'any', 'unprocessed', 'processed' ],
+							'default'     => 'any',
 						],
 						'date_after'  => [
 							'type'        => 'string',
@@ -447,21 +452,7 @@ final readonly class AbilitiesController {
 							'type'  => 'array',
 							'items' => [
 								'type'       => 'object',
-								'properties' => [
-									'_links'         => $invoice_links,
-									'id'             => [ 'type' => 'integer' ],
-									'post_id'        => [ 'type' => [ 'integer', 'null' ] ],
-									'invoice_number' => [ 'type' => 'string' ],
-									'document_type'  => [ 'type' => 'string' ],
-									'invoice_date'   => [ 'type' => 'string' ],
-									'currency'       => [ 'type' => 'string' ],
-									'payment_method' => $nullable_string,
-									'subtotal'       => [ 'type' => 'number' ],
-									'vat_amount'     => [ 'type' => 'number' ],
-									'total'          => [ 'type' => 'number' ],
-									'tax_scheme'     => $nullable_string,
-									'line_items'     => $invoice_schema['properties']['line_items'] ?? [ 'type' => 'array' ],
-								],
+								'properties' => $invoice_properties,
 							],
 						],
 					],
@@ -472,6 +463,90 @@ final readonly class AbilitiesController {
 					'show_in_rest' => true,
 					'annotations'  => [
 						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
+			]
+		);
+
+		\wp_register_ability(
+			'orbis-siteground/get-invoice',
+			[
+				'label'               => \__( 'Get SiteGround invoice', 'orbis-siteground' ),
+				'description'         => \__( 'Gets a SiteGround invoice with the text that was extracted from the uploaded PDF, so the invoice can be analysed. The text is null when no text could be extracted, request the PDF itself with include_pdf in that case. The data contains the registered invoice data, null for an unprocessed invoice.', 'orbis-siteground' ),
+				'category'            => 'orbis-siteground',
+				'input_schema'        => [
+					'type'                 => 'object',
+					'properties'           => [
+						'id'          => $invoice_id,
+						'include_pdf' => [
+							'type'        => 'boolean',
+							'description' => \__( 'Also return the original PDF file, base64 encoded.', 'orbis-siteground' ),
+							'default'     => false,
+						],
+					],
+					'required'             => [ 'id' ],
+					'additionalProperties' => false,
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => \array_merge(
+						$invoice_properties,
+						[
+							'text' => [
+								'type'        => [ 'string', 'null' ],
+								'description' => \__( 'Text extracted from the PDF.', 'orbis-siteground' ),
+							],
+							'data' => [
+								'type'        => [ 'object', 'null' ],
+								'description' => \__( 'Registered invoice data, valid against the invoice schema of the update-invoice ability.', 'orbis-siteground' ),
+							],
+							'pdf'  => [
+								'type'        => 'string',
+								'description' => \__( 'The original PDF file, base64 encoded, only when include_pdf is true.', 'orbis-siteground' ),
+							],
+						]
+					),
+				],
+				'execute_callback'    => $this->get_invoice( ... ),
+				'permission_callback' => fn() => \current_user_can( 'edit_posts' ),
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
+			]
+		);
+
+		\wp_register_ability(
+			'orbis-siteground/update-invoice',
+			[
+				'label'               => \__( 'Update SiteGround invoice', 'orbis-siteground' ),
+				'description'         => \__( 'Registers the structured data of an uploaded SiteGround invoice PDF. First read the invoice with the get-invoice ability and extract the data exactly according to the invoice schema: copy values literally, use null for values that are not on the PDF and never guess. The data replaces the previously registered data of the invoice and marks the invoice as processed. An invoice number can only be registered for one invoice.', 'orbis-siteground' ),
+				'category'            => 'orbis-siteground',
+				'input_schema'        => [
+					'type'                 => 'object',
+					'properties'           => [
+						'id'      => $invoice_id,
+						'invoice' => $invoice_schema,
+					],
+					'required'             => [ 'id', 'invoice' ],
+					'additionalProperties' => false,
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => $invoice_properties,
+				],
+				'execute_callback'    => $this->update_invoice( ... ),
+				'permission_callback' => fn() => \current_user_can( 'manage_options' ),
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [
+						'readonly'    => false,
 						'destructive' => false,
 						'idempotent'  => true,
 					],
@@ -648,43 +723,6 @@ final readonly class AbilitiesController {
 	}
 
 	/**
-	 * Upload invoice.
-	 *
-	 * @param array<string, mixed>|null $input Input.
-	 * @return array<string, mixed>|WP_Error
-	 */
-	private function upload_invoice( $input = [] ) {
-		$input = (array) $input;
-
-		$uploader = new InvoiceUploader( $this->plugin->invoices );
-
-		try {
-			$result = $uploader->upload(
-				(array) ( $input['invoice'] ?? [] ),
-				(string) ( $input['pdf'] ?? '' ),
-				isset( $input['file_name'] ) ? (string) $input['file_name'] : null
-			);
-		} catch ( InvalidArgumentException $e ) {
-			return new WP_Error( 'orbis_siteground_invalid_invoice', $e->getMessage() );
-		} catch ( RuntimeException $e ) {
-			return new WP_Error( 'orbis_siteground_invoice_upload_failed', $e->getMessage() );
-		}
-
-		$invoice = $result['invoice'];
-
-		return [
-			'_links'         => $this->get_invoice_links( $invoice ),
-			'id'             => (int) $invoice->id,
-			'post_id'        => null === $invoice->post_id ? null : (int) $invoice->post_id,
-			'created'        => $result['created'],
-			'invoice_number' => $invoice->invoice_number,
-			'invoice_date'   => $invoice->invoice_date,
-			'currency'       => $invoice->currency,
-			'total'          => (float) $invoice->total,
-		];
-	}
-
-	/**
 	 * Search invoices.
 	 *
 	 * @param array<string, mixed>|null $input Input.
@@ -699,24 +737,91 @@ final readonly class AbilitiesController {
 	}
 
 	/**
+	 * Get invoice.
+	 *
+	 * @param array<string, mixed>|null $input Input.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private function get_invoice( $input = [] ) {
+		$input = (array) $input;
+
+		$invoice = $this->plugin->invoices->get_by_id( (int) ( $input['id'] ?? 0 ) );
+
+		if ( null === $invoice ) {
+			return new WP_Error( 'orbis_siteground_invoice_not_found', \__( 'SiteGround invoice not found.', 'orbis-siteground' ) );
+		}
+
+		$result = $this->format_invoice( $invoice );
+
+		$result['text'] = $invoice->text;
+		$result['data'] = null === $invoice->data ? null : Helpers::get_invoice_data( $invoice );
+
+		if ( true === ( $input['include_pdf'] ?? false ) ) {
+			$uploads = \wp_upload_dir( null, false );
+
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local file in the protected uploads directory.
+			$content = \file_get_contents( \trailingslashit( $uploads['basedir'] ) . $invoice->file_path );
+
+			if ( false === $content ) {
+				return new WP_Error( 'orbis_siteground_invoice_pdf_not_found', \__( 'SiteGround invoice PDF not found.', 'orbis-siteground' ) );
+			}
+
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- The PDF is returned base64 encoded.
+			$result['pdf'] = \base64_encode( $content );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Update invoice.
+	 *
+	 * @param array<string, mixed>|null $input Input.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private function update_invoice( $input = [] ) {
+		$input = (array) $input;
+
+		$service = new InvoiceService( $this->plugin->invoices );
+
+		try {
+			$invoice = $service->update( (int) ( $input['id'] ?? 0 ), (array) ( $input['invoice'] ?? [] ) );
+		} catch ( InvalidArgumentException $e ) {
+			return new WP_Error( 'orbis_siteground_invalid_invoice', $e->getMessage() );
+		} catch ( RuntimeException $e ) {
+			return new WP_Error( 'orbis_siteground_invoice_update_failed', $e->getMessage() );
+		}
+
+		return $this->format_invoice( $invoice );
+	}
+
+	/**
 	 * Format invoice row for ability output.
 	 *
 	 * @param object $row Database row.
 	 * @return array<string, mixed>
 	 */
 	private function format_invoice( object $row ): array {
+		$number_or_null = fn( $value ) => null === $value ? null : (float) $value;
+
 		return [
 			'_links'         => $this->get_invoice_links( $row ),
 			'id'             => (int) $row->id,
 			'post_id'        => null === $row->post_id ? null : (int) $row->post_id,
+			'status'         => null === $row->processed_at ? 'unprocessed' : 'processed',
+			'file_name'      => $row->file_name,
+			'file_size'      => (int) $row->file_size,
+			'file_sha256'    => $row->file_sha256,
+			'uploaded_at'    => $row->created_at,
+			'processed_at'   => $row->processed_at,
 			'invoice_number' => $row->invoice_number,
 			'document_type'  => $row->document_type,
 			'invoice_date'   => $row->invoice_date,
 			'currency'       => $row->currency,
 			'payment_method' => $row->payment_method,
-			'subtotal'       => (float) $row->subtotal,
-			'vat_amount'     => (float) $row->vat_amount,
-			'total'          => (float) $row->total,
+			'subtotal'       => $number_or_null( $row->subtotal ),
+			'vat_amount'     => $number_or_null( $row->vat_amount ),
+			'total'          => $number_or_null( $row->total ),
 			'tax_scheme'     => $row->tax_scheme,
 			'line_items'     => Helpers::get_invoice_line_items( $row ),
 		];

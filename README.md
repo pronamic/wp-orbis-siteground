@@ -4,20 +4,21 @@ The Orbis SiteGround plugin compares hosting packages domains against Orbis subs
 
 ## Invoices
 
-SiteGround only provides invoices as PDF. An AI client (for example Claude via the [Orbis MCP server](https://github.com/pronamic/orbis-mcp-server)) reads the PDF, extracts the data according to the [`json-schemas/siteground-invoice.json`](json-schemas/siteground-invoice.json) JSON schema and uploads both with the `orbis-siteground/upload-invoice` ability:
+SiteGround only provides invoices as PDF. Invoices are processed in two steps:
+
+1. **Upload** – upload the PDFs in the WordPress admin via *SiteGround → Upload invoices*. Each PDF is stored in `wp-content/uploads/orbis-siteground/{year}/{month}/` (upload date), its text is extracted with [`smalot/pdfparser`](https://github.com/smalot/pdfparser) and an unprocessed invoice is created in the `orbis_siteground_invoices` table, keyed by the SHA-256 hash of the PDF. A PDF that was uploaded before is skipped.
+2. **Process** – an AI client (for example Claude via the [Orbis MCP server](https://github.com/pronamic/orbis-mcp-server)) finds the unprocessed invoices with `orbis-siteground/search-invoices` (`"status": "unprocessed"`), reads the PDF text with `orbis-siteground/get-invoice` and registers the data, valid against [`json-schemas/siteground-invoice.json`](json-schemas/siteground-invoice.json), with `orbis-siteground/update-invoice`:
 
 ```json
 {
-	"invoice": { "document_type": "invoice", "invoice_number": "4869562", "…": "…" },
-	"pdf": "JVBERi0xLjQK…",
-	"file_name": "invoice-4869562.pdf"
+	"id": 12,
+	"invoice": { "document_type": "invoice", "invoice_number": "4869562", "…": "…" }
 }
 ```
 
-- The data is stored in the `orbis_siteground_invoices` table (main values in columns, the complete JSON in `data`) with an `orbis_sg_invoice` post per invoice (`/siteground/invoices/`).
-- The PDF is stored in `wp-content/uploads/orbis-siteground/{year}/{month}/` of the invoice date. Direct access is denied with a `.htaccess` file, logged in users download the PDF via `admin-post.php?action=orbis_siteground_invoice_pdf&invoice_id={id}`.
-- Uploading an invoice with an existing invoice number replaces the stored data and PDF.
-- The `orbis-siteground/search-invoices` ability searches the invoices, also by domain or product of the invoice lines.
+- The main values are stored in columns, the complete JSON in `data`. Updating an invoice again replaces the data, an invoice number can only be registered once.
+- Every invoice has an `orbis_sg_invoice` post (`/siteground/invoices/`).
+- Direct access to the PDFs is denied with a `.htaccess` file, logged in users download the PDF via `admin-post.php?action=orbis_siteground_invoice_pdf&invoice_id={id}`. `get-invoice` can also return the PDF base64 encoded (`include_pdf`).
 
 ## Deploy
 

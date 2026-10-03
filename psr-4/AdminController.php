@@ -83,6 +83,15 @@ final class AdminController {
 	}
 
 	/**
+	 * Get invoice upload page URL.
+	 *
+	 * @return string
+	 */
+	public static function get_invoice_upload_url(): string {
+		return \add_query_arg( 'page', 'orbis_siteground_invoice_upload', \admin_url( 'edit.php?post_type=orbis_sg_account' ) );
+	}
+
+	/**
 	 * Admin menu.
 	 *
 	 * @return void
@@ -105,6 +114,40 @@ final class AdminController {
 			'orbis_siteground_comparison',
 			$this->page_comparison( ... )
 		);
+
+		\add_submenu_page(
+			'edit.php?post_type=orbis_sg_account',
+			\__( 'Upload SiteGround invoices', 'orbis-siteground' ),
+			\__( 'Upload invoices', 'orbis-siteground' ),
+			'manage_options',
+			'orbis_siteground_invoice_upload',
+			$this->page_invoice_upload( ... )
+		);
+	}
+
+	/**
+	 * Page invoice upload.
+	 *
+	 * @return void
+	 */
+	private function page_invoice_upload(): void {
+		$results_key = InvoiceUploadController::get_results_transient_key();
+
+		$results = \get_transient( $results_key );
+
+		\delete_transient( $results_key );
+
+		$search = $this->plugin->invoices->search(
+			[
+				'status'   => 'unprocessed',
+				'per_page' => 100,
+			]
+		);
+
+		$unprocessed       = $search['invoices'];
+		$unprocessed_total = $search['total'];
+
+		include __DIR__ . '/../admin/page-invoice-upload.php';
 	}
 
 	/**
@@ -363,6 +406,7 @@ final class AdminController {
 
 		unset( $columns['date'] );
 
+		$columns['orbis_sg_status']  = \__( 'Status', 'orbis-siteground' );
 		$columns['orbis_sg_domains'] = \__( 'Domains', 'orbis-siteground' );
 		$columns['orbis_sg_total']   = \__( 'Total', 'orbis-siteground' );
 		$columns['orbis_sg_pdf']     = \__( 'PDF', 'orbis-siteground' );
@@ -395,6 +439,10 @@ final class AdminController {
 		}
 
 		switch ( $column ) {
+			case 'orbis_sg_status':
+				Helpers::render_invoice_status_badge( $invoice );
+
+				break;
 			case 'orbis_sg_domains':
 				echo \esc_html( \implode( ', ', Helpers::get_invoice_domains( $invoice ) ) );
 
@@ -432,7 +480,7 @@ final class AdminController {
 			\wp_die( \esc_html__( 'SiteGround invoice not found.', 'orbis-siteground' ), 404 );
 		}
 
-		$base_dir = \realpath( InvoiceUploader::get_base_dir() );
+		$base_dir = \realpath( InvoiceService::get_base_dir() );
 		$uploads  = \wp_upload_dir( null, false );
 		$file     = \realpath( \trailingslashit( $uploads['basedir'] ) . $invoice->file_path );
 

@@ -266,6 +266,29 @@ final class Helpers {
 	}
 
 	/**
+	 * Render the status badge of an invoice.
+	 *
+	 * @param object $invoice Invoice.
+	 * @param string $context Context, `admin` or `theme`.
+	 * @return void
+	 */
+	public static function render_invoice_status_badge( object $invoice, string $context = 'admin' ): void {
+		$badge = [
+			'variation' => 'success',
+			'content'   => \__( 'Processed', 'orbis-siteground' ),
+		];
+
+		if ( null === $invoice->processed_at ) {
+			$badge = [
+				'variation' => 'warning',
+				'content'   => \__( 'Unprocessed', 'orbis-siteground' ),
+			];
+		}
+
+		self::render_badges( [ $badge ], $context );
+	}
+
+	/**
 	 * Get the decoded data of an invoice.
 	 *
 	 * @param object $invoice Invoice.

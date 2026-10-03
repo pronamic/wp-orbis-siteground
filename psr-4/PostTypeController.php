@@ -135,7 +135,7 @@ final class PostTypeController {
 				],
 				'map_meta_cap' => true,
 				'capabilities' => [
-					// Invoices are only created by the upload invoice ability.
+					// Invoices are only created by the invoice upload.
 					'create_posts' => 'do_not_allow',
 				],
 			]

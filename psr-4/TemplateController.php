@@ -152,7 +152,11 @@ final readonly class TemplateController {
 			$invoice  = $item;
 			$accounts = $this->plugin->accounts->get_by_names( Helpers::get_invoice_domains( $invoice ) );
 
-			include __DIR__ . '/../templates/invoice-lines.php';
+			if ( null !== $invoice->processed_at ) {
+				include __DIR__ . '/../templates/invoice-lines.php';
+			}
+
+			include __DIR__ . '/../templates/invoice-text.php';
 
 			$card_heading = \__( 'SiteGround invoice data', 'orbis-siteground' );
 		} else {

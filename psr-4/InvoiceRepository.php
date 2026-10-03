@@ -53,6 +53,23 @@ final class InvoiceRepository {
 	}
 
 	/**
+	 * Get invoice by the SHA-256 hash of the PDF.
+	 *
+	 * @param string $file_sha256 SHA-256 hash of the PDF.
+	 * @return object|null
+	 */
+	public function get_by_file_sha256( string $file_sha256 ): ?object {
+		global $wpdb;
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM $wpdb->orbis_siteground_invoices WHERE file_sha256 = %s;",
+				$file_sha256
+			)
+		);
+	}
+
+	/**
 	 * Get invoice by post ID.
 	 *
 	 * @param int $post_id Post ID.
@@ -133,10 +150,10 @@ final class InvoiceRepository {
 	/**
 	 * Search invoices.
 	 *
-	 * The search term is also matched against the JSON data, so invoices can
-	 * be found by the domain or product of an invoice line.
+	 * The search term is also matched against the file name and the JSON data,
+	 * so invoices can be found by the domain or product of an invoice line.
 	 *
-	 * @param array{search?: string, date_after?: string, date_before?: string, per_page?: int, page?: int} $args Arguments.
+	 * @param array{search?: string, status?: string, date_after?: string, date_before?: string, per_page?: int, page?: int} $args Arguments.
 	 * @return array{total: int, page: int, per_page: int, invoices: object[]}
 	 */
 	public function search( array $args = [] ): array {
@@ -146,6 +163,7 @@ final class InvoiceRepository {
 			$args,
 			[
 				'search'      => '',
+				'status'      => 'any',
 				'date_after'  => '',
 				'date_before' => '',
 				'per_page'    => 20,
@@ -161,10 +179,19 @@ final class InvoiceRepository {
 			$like = '%' . $wpdb->esc_like( $search ) . '%';
 
 			$conditions[] = $wpdb->prepare(
-				'( invoice.invoice_number LIKE %s OR invoice.data LIKE %s )',
+				'( invoice.invoice_number LIKE %s OR invoice.file_name LIKE %s OR invoice.data LIKE %s )',
+				$like,
 				$like,
 				$like
 			);
+		}
+
+		if ( 'processed' === $args['status'] ) {
+			$conditions[] = 'invoice.processed_at IS NOT NULL';
+		}
+
+		if ( 'unprocessed' === $args['status'] ) {
+			$conditions[] = 'invoice.processed_at IS NULL';
 		}
 
 		if ( '' !== $args['date_after'] ) {
@@ -186,7 +213,7 @@ final class InvoiceRepository {
 
 		$invoices = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT invoice.* FROM $wpdb->orbis_siteground_invoices AS invoice WHERE $where ORDER BY invoice.invoice_date DESC, invoice.invoice_number DESC LIMIT %d OFFSET %d;",
+				"SELECT invoice.* FROM $wpdb->orbis_siteground_invoices AS invoice WHERE $where ORDER BY invoice.processed_at IS NOT NULL, invoice.invoice_date DESC, invoice.id DESC LIMIT %d OFFSET %d;",
 				$per_page,
 				$offset
 			)
