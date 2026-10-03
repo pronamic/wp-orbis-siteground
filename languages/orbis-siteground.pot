@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-03T20:24:39+00:00\n"
+"POT-Creation-Date: 2026-10-03T21:10:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: orbis-siteground\n"
@@ -289,7 +289,7 @@ msgstr ""
 
 #: psr-4/AbilitiesController.php:168
 #: psr-4/AbilitiesController.php:271
-#: psr-4/AbilitiesController.php:424
+#: psr-4/AbilitiesController.php:438
 msgid "Page of results to return."
 msgstr ""
 
@@ -330,115 +330,115 @@ msgstr ""
 msgid "HAL links of the invoice. Each link has an href and a title that describes what the link is for."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:359
+#: psr-4/AbilitiesController.php:373
 msgid "Unprocessed when the invoice data has not been registered yet with the update-invoice ability, processed otherwise."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:381
+#: psr-4/AbilitiesController.php:395
 msgid "Orbis ID of the SiteGround invoice (id of the search-invoices ability)."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:388
+#: psr-4/AbilitiesController.php:402
 #: psr-4/PostTypeController.php:119
 msgid "Search SiteGround invoices"
 msgstr ""
 
-#: psr-4/AbilitiesController.php:389
+#: psr-4/AbilitiesController.php:403
 msgid "Searches the SiteGround invoice PDFs that are uploaded to Orbis, unprocessed invoices first and then newest first. An unprocessed invoice is a PDF that has been uploaded but whose data has not been registered yet: read it with the get-invoice ability and register the data with the update-invoice ability. Amounts are decimal numbers in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:397
+#: psr-4/AbilitiesController.php:411
 msgid "Search term, matched against the invoice number, the file name and all invoice data, for example a domain name or product of an invoice line."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:401
+#: psr-4/AbilitiesController.php:415
 msgid "Limit the results to unprocessed or processed invoices."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:408
+#: psr-4/AbilitiesController.php:422
 msgid "Only return invoices dated on or after this date (YYYY-MM-DD)."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:413
+#: psr-4/AbilitiesController.php:427
 msgid "Only return invoices dated before this date (YYYY-MM-DD)."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:417
+#: psr-4/AbilitiesController.php:431
 msgid "Maximum number of invoices to return."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:462
+#: psr-4/AbilitiesController.php:476
 msgid "Get SiteGround invoice"
 msgstr ""
 
-#: psr-4/AbilitiesController.php:463
+#: psr-4/AbilitiesController.php:477
 msgid "Gets a SiteGround invoice with the text that was extracted from the uploaded PDF, so the invoice can be analysed. The text is null when no text could be extracted, request the PDF itself with include_pdf in that case. The data contains the registered invoice data, null for an unprocessed invoice."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:471
+#: psr-4/AbilitiesController.php:485
 msgid "Also return the original PDF file, base64 encoded."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:485
+#: psr-4/AbilitiesController.php:499
 msgid "Text extracted from the PDF."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:489
+#: psr-4/AbilitiesController.php:503
 msgid "Registered invoice data, valid against the invoice schema of the update-invoice ability."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:493
+#: psr-4/AbilitiesController.php:507
 msgid "The original PDF file, base64 encoded, only when include_pdf is true."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:514
+#: psr-4/AbilitiesController.php:528
 msgid "Update SiteGround invoice"
 msgstr ""
 
-#: psr-4/AbilitiesController.php:515
+#: psr-4/AbilitiesController.php:529
 msgid "Registers the structured data of an uploaded SiteGround invoice PDF. First read the invoice with the get-invoice ability and extract the data exactly according to the invoice schema: copy values literally, use null for values that are not on the PDF and never guess. The data replaces the previously registered data of the invoice and marks the invoice as processed. An invoice number can only be registered for one invoice."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:612
+#: psr-4/AbilitiesController.php:626
 msgid "Orbis page of this SiteGround account."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:619
+#: psr-4/AbilitiesController.php:633
 msgid "This hosting account in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for the hosting plan, renewal and billing."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:664
+#: psr-4/AbilitiesController.php:678
 msgid "Orbis page of this SiteGround website."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:670
+#: psr-4/AbilitiesController.php:684
 msgid "This website in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for websites, services and billing."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:675
+#: psr-4/AbilitiesController.php:689
 msgid "SiteGround Site Tools (tools.siteground.com) of this website, the environment for managing the website itself: files, databases, email, DNS, SSL, caching, backups and WordPress."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:681
+#: psr-4/AbilitiesController.php:695
 msgid "Admin dashboard of the CMS of this website, for example the WordPress admin."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:737
+#: psr-4/AbilitiesController.php:751
 #: psr-4/AdminController.php:480
 #: psr-4/InvoiceService.php:147
 msgid "SiteGround invoice not found."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:752
+#: psr-4/AbilitiesController.php:766
 #: psr-4/AdminController.php:488
 msgid "SiteGround invoice PDF not found."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:828
+#: psr-4/AbilitiesController.php:842
 msgid "Orbis page of this SiteGround invoice."
 msgstr ""
 
-#: psr-4/AbilitiesController.php:834
+#: psr-4/AbilitiesController.php:848
 msgid "Original PDF of this SiteGround invoice, only accessible when logged in to Orbis."
 msgstr ""
 
