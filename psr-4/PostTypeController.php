@@ -104,5 +104,41 @@ final class PostTypeController {
 				],
 			]
 		);
+
+		\register_post_type(
+			'orbis_sg_invoice',
+			[
+				'label'        => \__( 'SiteGround invoices', 'orbis-siteground' ),
+				'labels'       => [
+					'name'               => \_x( 'SiteGround invoices', 'post type general name', 'orbis-siteground' ),
+					'singular_name'      => \_x( 'SiteGround invoice', 'post type singular name', 'orbis-siteground' ),
+					'all_items'          => \__( 'Invoices', 'orbis-siteground' ),
+					'edit_item'          => \__( 'Edit SiteGround invoice', 'orbis-siteground' ),
+					'view_item'          => \__( 'View SiteGround invoice', 'orbis-siteground' ),
+					'view_items'         => \__( 'View SiteGround invoices', 'orbis-siteground' ),
+					'search_items'       => \__( 'Search SiteGround invoices', 'orbis-siteground' ),
+					'not_found'          => \__( 'No SiteGround invoices found', 'orbis-siteground' ),
+					'not_found_in_trash' => \__( 'No SiteGround invoices found in Trash', 'orbis-siteground' ),
+				],
+				'public'       => true,
+				'show_in_menu' => 'edit.php?post_type=orbis_sg_account',
+				'show_in_rest' => true,
+				'rest_base'    => 'orbis/siteground-invoices',
+				'supports'     => [
+					'title',
+					'comments',
+				],
+				'has_archive'  => 'siteground/invoices',
+				'rewrite'      => [
+					'slug'       => 'siteground/invoices',
+					'with_front' => false,
+				],
+				'map_meta_cap' => true,
+				'capabilities' => [
+					// Invoices are only created by the upload invoice ability.
+					'create_posts' => 'do_not_allow',
+				],
+			]
+		);
 	}
 }

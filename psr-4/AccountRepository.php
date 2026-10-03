@@ -41,6 +41,40 @@ final class AccountRepository extends Repository {
 	}
 
 	/**
+	 * Get accounts by names.
+	 *
+	 * @param string[] $names Account names (domain names).
+	 * @return array<string, object> Accounts keyed by name.
+	 */
+	public function get_by_names( array $names ): array {
+		global $wpdb;
+
+		$names = \array_values( \array_unique( \array_filter( \array_map( strval( ... ), $names ) ) ) );
+
+		if ( [] === $names ) {
+			return [];
+		}
+
+		$placeholders = \implode( ', ', \array_fill( 0, \count( $names ), '%s' ) );
+
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders are generated above.
+				"SELECT * FROM $wpdb->orbis_siteground_accounts WHERE name IN ( $placeholders ) ORDER BY removed_at IS NOT NULL, last_seen_at DESC;",
+				...$names
+			)
+		);
+
+		$accounts = [];
+
+		foreach ( $results as $result ) {
+			$accounts[ (string) $result->name ] ??= $result;
+		}
+
+		return $accounts;
+	}
+
+	/**
 	 * Search accounts.
 	 *
 	 * @param array{search?: string, status?: string, plan_type?: string, include_removed?: bool, expires_before?: string, expires_after?: string, per_page?: int, page?: int} $args Arguments.

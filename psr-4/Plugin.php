@@ -38,6 +38,13 @@ final class Plugin {
 	public readonly WebsiteRepository $websites;
 
 	/**
+	 * Invoice repository.
+	 *
+	 * @var InvoiceRepository
+	 */
+	public readonly InvoiceRepository $invoices;
+
+	/**
 	 * Return instance of this class.
 	 *
 	 * @param string $file Plugin file.
@@ -64,6 +71,7 @@ final class Plugin {
 
 		$this->accounts = new AccountRepository();
 		$this->websites = new WebsiteRepository();
+		$this->invoices = new InvoiceRepository();
 
 		\add_action( 'init', $this->maybe_install( ... ), 20 );
 
@@ -87,6 +95,7 @@ final class Plugin {
 
 		$wpdb->orbis_siteground_accounts = $wpdb->prefix . 'orbis_siteground_accounts';
 		$wpdb->orbis_siteground_websites = $wpdb->prefix . 'orbis_siteground_websites';
+		$wpdb->orbis_siteground_invoices = $wpdb->prefix . 'orbis_siteground_invoices';
 	}
 
 	/**
@@ -109,7 +118,7 @@ final class Plugin {
 	 * @return void
 	 */
 	private function maybe_install(): void {
-		if ( '2.1.0' === \get_option( 'orbis_siteground_db_version' ) ) {
+		if ( '2.2.0' === \get_option( 'orbis_siteground_db_version' ) ) {
 			return;
 		}
 
@@ -120,7 +129,7 @@ final class Plugin {
 		// The last import is stored per import type since version 2.1.0.
 		\delete_option( 'orbis_siteground_last_import' );
 
-		\update_option( 'orbis_siteground_db_version', '2.1.0' );
+		\update_option( 'orbis_siteground_db_version', '2.2.0' );
 	}
 
 	/**
@@ -198,6 +207,31 @@ final class Plugin {
 				KEY domain (domain),
 				KEY status (status),
 				KEY removed_at (removed_at)
+			) $charset_collate;
+			CREATE TABLE $wpdb->orbis_siteground_invoices (
+				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				created_at DATETIME NOT NULL,
+				updated_at DATETIME NOT NULL,
+				post_id BIGINT(20) UNSIGNED DEFAULT NULL,
+				invoice_number VARCHAR(64) NOT NULL,
+				document_type VARCHAR(32) NOT NULL,
+				invoice_date DATE NOT NULL,
+				currency CHAR(3) NOT NULL,
+				payment_method VARCHAR(64) DEFAULT NULL,
+				subtotal DECIMAL(12,2) NOT NULL,
+				vat_amount DECIMAL(12,2) NOT NULL,
+				total DECIMAL(12,2) NOT NULL,
+				tax_scheme VARCHAR(32) DEFAULT NULL,
+				file_path VARCHAR(255) NOT NULL,
+				file_name VARCHAR(191) DEFAULT NULL,
+				file_size INT(10) UNSIGNED NOT NULL,
+				file_sha256 CHAR(64) NOT NULL,
+				data LONGTEXT NOT NULL,
+				PRIMARY KEY  (id),
+				UNIQUE KEY invoice_number (invoice_number),
+				UNIQUE KEY post_id (post_id),
+				KEY invoice_date (invoice_date),
+				KEY total (total)
 			) $charset_collate;
 			SQL;
 

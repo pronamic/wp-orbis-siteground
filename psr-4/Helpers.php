@@ -233,6 +233,149 @@ final class Helpers {
 	}
 
 	/**
+	 * Get the URL of the PDF of an invoice.
+	 *
+	 * The PDFs are protected against direct access and served by the download
+	 * handler of the admin controller.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return string
+	 */
+	public static function get_invoice_pdf_url( object $invoice ): string {
+		return \add_query_arg(
+			[
+				'action'     => 'orbis_siteground_invoice_pdf',
+				'invoice_id' => (int) $invoice->id,
+			],
+			\admin_url( 'admin-post.php' )
+		);
+	}
+
+	/**
+	 * Render the PDF link of an invoice.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return void
+	 */
+	public static function render_invoice_pdf_link( object $invoice ): void {
+		\printf(
+			'<a href="%s">%s</a>',
+			\esc_url( self::get_invoice_pdf_url( $invoice ) ),
+			\esc_html__( 'PDF', 'orbis-siteground' )
+		);
+	}
+
+	/**
+	 * Get the decoded data of an invoice.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return array<string, mixed>
+	 */
+	public static function get_invoice_data( object $invoice ): array {
+		$data = \json_decode( (string) $invoice->data, true );
+
+		return \is_array( $data ) ? $data : [];
+	}
+
+	/**
+	 * Get the line items of an invoice.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function get_invoice_line_items( object $invoice ): array {
+		$line_items = self::get_invoice_data( $invoice )['line_items'] ?? [];
+
+		return \is_array( $line_items ) ? \array_values( \array_filter( $line_items, is_array( ... ) ) ) : [];
+	}
+
+	/**
+	 * Get the domains of the lines of an invoice.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return string[]
+	 */
+	public static function get_invoice_domains( object $invoice ): array {
+		$domains = \array_map(
+			fn( array $line_item ) => (string) ( $line_item['domain'] ?? '' ),
+			self::get_invoice_line_items( $invoice )
+		);
+
+		return \array_values( \array_unique( \array_filter( $domains ) ) );
+	}
+
+	/**
+	 * Format an amount.
+	 *
+	 * @param mixed  $amount   Amount.
+	 * @param string $currency ISO 4217 currency code.
+	 * @return string
+	 */
+	public static function format_amount( $amount, string $currency ): string {
+		if ( ! \is_numeric( $amount ) ) {
+			return '';
+		}
+
+		$symbols = [
+			'EUR' => '€',
+			'USD' => '$',
+			'GBP' => '£',
+		];
+
+		return \trim( ( $symbols[ $currency ] ?? $currency ) . ' ' . \number_format_i18n( (float) $amount, 2 ) );
+	}
+
+	/**
+	 * Get the label of a document type.
+	 *
+	 * @param string|null $document_type Document type, `invoice` or `credit_note`.
+	 * @return string
+	 */
+	public static function get_document_type_label( ?string $document_type ): string {
+		$labels = [
+			'invoice'     => \__( 'Invoice', 'orbis-siteground' ),
+			'credit_note' => \__( 'Credit note', 'orbis-siteground' ),
+		];
+
+		return $labels[ $document_type ] ?? (string) $document_type;
+	}
+
+	/**
+	 * Get the label of a tax scheme.
+	 *
+	 * @param string|null $tax_scheme Tax scheme, for example `reverse_charge`.
+	 * @return string
+	 */
+	public static function get_tax_scheme_label( ?string $tax_scheme ): string {
+		$labels = [
+			'standard'       => \__( 'Standard', 'orbis-siteground' ),
+			'reverse_charge' => \__( 'Reverse charge', 'orbis-siteground' ),
+			'exempt'         => \__( 'Exempt', 'orbis-siteground' ),
+			'none'           => \__( 'None', 'orbis-siteground' ),
+		];
+
+		return $labels[ $tax_scheme ] ?? (string) $tax_scheme;
+	}
+
+	/**
+	 * Get the label of an invoice line type.
+	 *
+	 * @param string|null $type Line type, for example `renewal`.
+	 * @return string
+	 */
+	public static function get_line_type_label( ?string $type ): string {
+		$labels = [
+			'new'     => \__( 'New', 'orbis-siteground' ),
+			'renewal' => \__( 'Renewal', 'orbis-siteground' ),
+			'upgrade' => \__( 'Upgrade', 'orbis-siteground' ),
+			'addon'   => \__( 'Add-on', 'orbis-siteground' ),
+			'other'   => \__( 'Other', 'orbis-siteground' ),
+		];
+
+		return $labels[ $type ] ?? (string) $type;
+	}
+
+	/**
 	 * Render the status badges of an account.
 	 *
 	 * @param object $account Account.

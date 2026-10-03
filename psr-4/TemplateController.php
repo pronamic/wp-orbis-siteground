@@ -71,7 +71,7 @@ final readonly class TemplateController {
 	 * @return string
 	 */
 	private function template_include( $template ) {
-		foreach ( [ 'orbis_sg_account', 'orbis_sg_website' ] as $post_type ) {
+		foreach ( [ 'orbis_sg_account', 'orbis_sg_website', 'orbis_sg_invoice' ] as $post_type ) {
 			if ( ! \is_post_type_archive( $post_type ) ) {
 				continue;
 			}
@@ -89,7 +89,7 @@ final readonly class TemplateController {
 	}
 
 	/**
-	 * Maybe include account or website details.
+	 * Maybe include account, website or invoice details.
 	 *
 	 * @return void
 	 */
@@ -116,10 +116,20 @@ final readonly class TemplateController {
 
 			include __DIR__ . '/../templates/website-details.php';
 		}
+
+		if ( \is_singular( 'orbis_sg_invoice' ) ) {
+			$invoice = $this->plugin->invoices->get_by_post_id( (int) \get_the_ID() );
+
+			if ( null === $invoice ) {
+				return;
+			}
+
+			include __DIR__ . '/../templates/invoice-details.php';
+		}
 	}
 
 	/**
-	 * Maybe include account or website data.
+	 * Maybe include account, website or invoice data.
 	 *
 	 * @return void
 	 */
@@ -132,6 +142,19 @@ final readonly class TemplateController {
 			$item = $this->plugin->websites->get_by_post_id( (int) \get_the_ID() );
 
 			$card_heading = \__( 'SiteGround website data', 'orbis-siteground' );
+		} elseif ( \is_singular( 'orbis_sg_invoice' ) ) {
+			$item = $this->plugin->invoices->get_by_post_id( (int) \get_the_ID() );
+
+			if ( null === $item ) {
+				return;
+			}
+
+			$invoice  = $item;
+			$accounts = $this->plugin->accounts->get_by_names( Helpers::get_invoice_domains( $invoice ) );
+
+			include __DIR__ . '/../templates/invoice-lines.php';
+
+			$card_heading = \__( 'SiteGround invoice data', 'orbis-siteground' );
 		} else {
 			return;
 		}

@@ -34,6 +34,13 @@ final class AdminController {
 	private ?array $list_websites = null;
 
 	/**
+	 * Invoices of the posts in the current list table, keyed by post ID.
+	 *
+	 * @var array<int, object>|null
+	 */
+	private ?array $list_invoices = null;
+
+	/**
 	 * Construct.
 	 *
 	 * @param Plugin $plugin Plugin.
@@ -59,6 +66,11 @@ final class AdminController {
 
 		\add_filter( 'manage_orbis_sg_website_posts_columns', $this->website_posts_columns( ... ) );
 		\add_action( 'manage_orbis_sg_website_posts_custom_column', $this->website_posts_custom_column( ... ), 10, 2 );
+
+		\add_filter( 'manage_orbis_sg_invoice_posts_columns', $this->invoice_posts_columns( ... ) );
+		\add_action( 'manage_orbis_sg_invoice_posts_custom_column', $this->invoice_posts_custom_column( ... ), 10, 2 );
+
+		\add_action( 'admin_post_orbis_siteground_invoice_pdf', $this->download_invoice_pdf( ... ) );
 	}
 
 	/**
@@ -338,5 +350,106 @@ final class AdminController {
 		}
 
 		return $this->list_websites[ $post_id ] ?? null;
+	}
+
+	/**
+	 * Invoice posts columns.
+	 *
+	 * @param array<string, string> $columns Columns.
+	 * @return array<string, string>
+	 */
+	private function invoice_posts_columns( array $columns ): array {
+		$date = $columns['date'] ?? null;
+
+		unset( $columns['date'] );
+
+		$columns['orbis_sg_domains'] = \__( 'Domains', 'orbis-siteground' );
+		$columns['orbis_sg_total']   = \__( 'Total', 'orbis-siteground' );
+		$columns['orbis_sg_pdf']     = \__( 'PDF', 'orbis-siteground' );
+
+		if ( null !== $date ) {
+			$columns['date'] = $date;
+		}
+
+		return $columns;
+	}
+
+	/**
+	 * Invoice posts custom column.
+	 *
+	 * @param string $column  Column.
+	 * @param int    $post_id Post ID.
+	 * @return void
+	 */
+	private function invoice_posts_custom_column( string $column, int $post_id ): void {
+		global $wp_query;
+
+		if ( null === $this->list_invoices ) {
+			$this->list_invoices = $this->plugin->invoices->get_by_post_ids( \wp_list_pluck( $wp_query->posts ?? [], 'ID' ) );
+		}
+
+		$invoice = $this->list_invoices[ $post_id ] ?? null;
+
+		if ( null === $invoice ) {
+			return;
+		}
+
+		switch ( $column ) {
+			case 'orbis_sg_domains':
+				echo \esc_html( \implode( ', ', Helpers::get_invoice_domains( $invoice ) ) );
+
+				break;
+			case 'orbis_sg_total':
+				echo \esc_html( Helpers::format_amount( $invoice->total, (string) $invoice->currency ) );
+
+				break;
+			case 'orbis_sg_pdf':
+				Helpers::render_invoice_pdf_link( $invoice );
+
+				break;
+		}
+	}
+
+	/**
+	 * Download invoice PDF.
+	 *
+	 * The PDFs are stored in the `orbis-siteground` uploads directory, which
+	 * denies direct access, so they are served by this handler.
+	 *
+	 * @return void
+	 */
+	private function download_invoice_pdf(): void {
+		if ( ! \current_user_can( 'edit_posts' ) ) {
+			\wp_die( \esc_html__( 'You are not allowed to view SiteGround invoices.', 'orbis-siteground' ), 403 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request, protected by the capability check.
+		$invoice_id = \absint( $_GET['invoice_id'] ?? 0 );
+
+		$invoice = $this->plugin->invoices->get_by_id( $invoice_id );
+
+		if ( null === $invoice ) {
+			\wp_die( \esc_html__( 'SiteGround invoice not found.', 'orbis-siteground' ), 404 );
+		}
+
+		$base_dir = \realpath( InvoiceUploader::get_base_dir() );
+		$uploads  = \wp_upload_dir( null, false );
+		$file     = \realpath( \trailingslashit( $uploads['basedir'] ) . $invoice->file_path );
+
+		if ( false === $base_dir || false === $file || ! \str_starts_with( $file, $base_dir . \DIRECTORY_SEPARATOR ) ) {
+			\wp_die( \esc_html__( 'SiteGround invoice PDF not found.', 'orbis-siteground' ), 404 );
+		}
+
+		\nocache_headers();
+
+		\header( 'Content-Type: application/pdf' );
+		\header( 'Content-Disposition: inline; filename="' . \basename( $file ) . '"' );
+		\header( 'Content-Length: ' . (string) \filesize( $file ) );
+		\header( 'X-Content-Type-Options: nosniff' );
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Stream the protected PDF.
+		\readfile( $file );
+
+		exit;
 	}
 }

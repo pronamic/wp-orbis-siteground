@@ -1,0 +1,193 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://github.com/wp-orbis/wp-orbis-siteground/json-schemas/siteground-invoice.json",
+	"title": "SiteGround invoice",
+	"description": "Structured data of a SiteGround invoice or credit note PDF. Copy values literally from the PDF, use null for values that are not on the PDF and never guess.",
+	"type": "object",
+	"properties": {
+		"document_type": {
+			"description": "Type of document.",
+			"type": "string",
+			"enum": [ "invoice", "credit_note" ]
+		},
+		"invoice_number": {
+			"description": "Invoice number as printed on the PDF, for example 4869562.",
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 64
+		},
+		"invoice_date": {
+			"description": "Invoice date in YYYY-MM-DD format.",
+			"type": "string",
+			"pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+		},
+		"currency": {
+			"description": "ISO 4217 currency code, for example EUR.",
+			"type": "string",
+			"pattern": "^[A-Z]{3}$"
+		},
+		"payment_method": {
+			"description": "Payment method as printed on the PDF in upper case, for example MASTERCARD, VISA or PAYPAL.",
+			"type": [ "string", "null" ]
+		},
+		"supplier": {
+			"description": "The SiteGround entity that issued the invoice.",
+			"$ref": "#/$defs/party"
+		},
+		"customer": {
+			"description": "The customer the invoice is addressed to.",
+			"$ref": "#/$defs/party"
+		},
+		"line_items": {
+			"description": "Invoice lines, in the order of the PDF.",
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"$ref": "#/$defs/line_item"
+			}
+		},
+		"totals": {
+			"description": "Invoice totals. Amounts are decimal numbers without currency symbol, negative for credit notes.",
+			"type": "object",
+			"properties": {
+				"subtotal": {
+					"description": "Total excluding VAT.",
+					"type": "number"
+				},
+				"vat_amount": {
+					"description": "VAT amount.",
+					"type": "number"
+				},
+				"vat_rate_percent": {
+					"description": "VAT rate in percent, for example 21 or 0.",
+					"type": [ "number", "null" ]
+				},
+				"total": {
+					"description": "Total including VAT.",
+					"type": "number"
+				}
+			},
+			"required": [ "subtotal", "vat_amount", "vat_rate_percent", "total" ],
+			"additionalProperties": false
+		},
+		"tax": {
+			"description": "VAT treatment of the invoice.",
+			"type": [ "object", "null" ],
+			"properties": {
+				"scheme": {
+					"description": "VAT scheme: standard (VAT charged), reverse_charge (VAT reverse charge, Art. 196 VAT Directive), exempt or none.",
+					"type": "string",
+					"enum": [ "standard", "reverse_charge", "exempt", "none" ]
+				},
+				"note": {
+					"description": "VAT note as printed on the PDF.",
+					"type": [ "string", "null" ]
+				}
+			},
+			"required": [ "scheme", "note" ],
+			"additionalProperties": false
+		}
+	},
+	"required": [ "document_type", "invoice_number", "invoice_date", "currency", "payment_method", "supplier", "customer", "line_items", "totals", "tax" ],
+	"additionalProperties": false,
+	"$defs": {
+		"address": {
+			"type": [ "object", "null" ],
+			"properties": {
+				"street": {
+					"type": [ "string", "null" ]
+				},
+				"postal_code": {
+					"type": [ "string", "null" ]
+				},
+				"city": {
+					"type": [ "string", "null" ]
+				},
+				"country": {
+					"description": "Country name in English, for example Netherlands.",
+					"type": [ "string", "null" ]
+				},
+				"country_code": {
+					"description": "ISO 3166-1 alpha-2 country code, for example NL.",
+					"type": [ "string", "null" ],
+					"pattern": "^[A-Z]{2}$"
+				}
+			},
+			"required": [ "street", "postal_code", "city", "country", "country_code" ],
+			"additionalProperties": false
+		},
+		"party": {
+			"type": "object",
+			"properties": {
+				"name": {
+					"description": "Name of the person or legal entity.",
+					"type": "string"
+				},
+				"company": {
+					"description": "Company name, when it differs from the name.",
+					"type": [ "string", "null" ]
+				},
+				"tax_id": {
+					"description": "Local tax ID, for example the Spanish CIF B-87194171.",
+					"type": [ "string", "null" ]
+				},
+				"vat_number": {
+					"description": "EU VAT number without spaces, for example NL814327394B01.",
+					"type": [ "string", "null" ]
+				},
+				"address": {
+					"$ref": "#/$defs/address"
+				},
+				"website": {
+					"description": "Website domain, for example eu.siteground.com.",
+					"type": [ "string", "null" ]
+				}
+			},
+			"required": [ "name", "company", "tax_id", "vat_number", "address", "website" ],
+			"additionalProperties": false
+		},
+		"line_item": {
+			"type": "object",
+			"properties": {
+				"description": {
+					"description": "Line description, copied literally from the PDF.",
+					"type": "string"
+				},
+				"type": {
+					"description": "Type of line: new (new order), renewal, upgrade, addon (extra service such as Site Scanner or extra storage) or other.",
+					"type": "string",
+					"enum": [ "new", "renewal", "upgrade", "addon", "other" ]
+				},
+				"product": {
+					"description": "Product name, for example GrowBig Hosting.",
+					"type": [ "string", "null" ]
+				},
+				"period": {
+					"description": "Period as stated on the PDF, for example 1 year or 1 month.",
+					"type": [ "string", "null" ]
+				},
+				"domain": {
+					"description": "Domain name the line applies to, in lower case and without www, for example example.com.",
+					"type": [ "string", "null" ]
+				},
+				"quantity": {
+					"type": "number"
+				},
+				"vat_rate_percent": {
+					"description": "VAT rate in percent, for example 21 or 0.",
+					"type": [ "number", "null" ]
+				},
+				"unit_price": {
+					"description": "Unit price excluding VAT.",
+					"type": "number"
+				},
+				"line_total": {
+					"description": "Line total excluding VAT.",
+					"type": "number"
+				}
+			},
+			"required": [ "description", "type", "product", "period", "domain", "quantity", "vat_rate_percent", "unit_price", "line_total" ],
+			"additionalProperties": false
+		}
+	}
+}
