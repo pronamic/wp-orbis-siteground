@@ -1,6 +1,6 @@
 {
     "name": "pronamic/wp-orbis-siteground",
-    "description": "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions.",
+    "description": "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and websites and compares the accounts against Orbis subscriptions.",
     "license": "GPL-3.0-or-later",
     "type": "wordpress-plugin",
     "autoload": {

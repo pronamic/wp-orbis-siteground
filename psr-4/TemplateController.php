@@ -41,18 +41,18 @@ final readonly class TemplateController {
 
 		\add_filter( 'template_include', $this->template_include( ... ) );
 
-		\add_action( 'orbis_before_side_content', $this->maybe_include_account_details( ... ) );
-		\add_action( 'orbis_after_main_content', $this->maybe_include_account_data( ... ) );
+		\add_action( 'orbis_before_side_content', $this->maybe_include_details( ... ) );
+		\add_action( 'orbis_after_main_content', $this->maybe_include_data( ... ) );
 	}
 
 	/**
-	 * Sort the accounts archive by name.
+	 * Sort the account and website archives by name.
 	 *
 	 * @param WP_Query $query Query.
 	 * @return void
 	 */
 	private function pre_get_posts( WP_Query $query ): void {
-		if ( \is_admin() || ! $query->is_main_query() || ! $query->is_post_type_archive( 'orbis_sg_account' ) ) {
+		if ( \is_admin() || ! $query->is_main_query() || ! $query->is_post_type_archive( [ 'orbis_sg_account', 'orbis_sg_website' ] ) ) {
 			return;
 		}
 
@@ -65,65 +65,81 @@ final readonly class TemplateController {
 	/**
 	 * Template include.
 	 *
-	 * Uses the archive template of this plugin, unless the theme has one.
+	 * Uses the archive templates of this plugin, unless the theme has one.
 	 *
 	 * @param string $template Template.
 	 * @return string
 	 */
 	private function template_include( $template ) {
-		if ( ! \is_post_type_archive( 'orbis_sg_account' ) ) {
-			return $template;
+		foreach ( [ 'orbis_sg_account', 'orbis_sg_website' ] as $post_type ) {
+			if ( ! \is_post_type_archive( $post_type ) ) {
+				continue;
+			}
+
+			$file = 'archive-' . $post_type . '.php';
+
+			if ( '' !== \locate_template( $file ) ) {
+				return $template;
+			}
+
+			return __DIR__ . '/../templates/' . $file;
 		}
 
-		$file = 'archive-orbis_sg_account.php';
-
-		if ( '' !== \locate_template( $file ) ) {
-			return $template;
-		}
-
-		return __DIR__ . '/../templates/' . $file;
+		return $template;
 	}
 
 	/**
-	 * Maybe include account details.
+	 * Maybe include account or website details.
 	 *
 	 * @return void
 	 */
-	private function maybe_include_account_details(): void {
-		$account = $this->get_singular_account();
+	private function maybe_include_details(): void {
+		if ( \is_singular( 'orbis_sg_account' ) ) {
+			$account = $this->plugin->accounts->get_by_post_id( (int) \get_the_ID() );
 
-		if ( null === $account ) {
-			return;
+			if ( null === $account ) {
+				return;
+			}
+
+			$websites = $this->plugin->websites->get_by_account_siteground_id( $account->siteground_id );
+
+			include __DIR__ . '/../templates/account-details.php';
+			include __DIR__ . '/../templates/account-websites.php';
 		}
 
-		include __DIR__ . '/../templates/account-details.php';
+		if ( \is_singular( 'orbis_sg_website' ) ) {
+			$website = $this->plugin->websites->get_by_post_id( (int) \get_the_ID() );
+
+			if ( null === $website ) {
+				return;
+			}
+
+			include __DIR__ . '/../templates/website-details.php';
+		}
 	}
 
 	/**
-	 * Maybe include account data.
+	 * Maybe include account or website data.
 	 *
 	 * @return void
 	 */
-	private function maybe_include_account_data(): void {
-		$account = $this->get_singular_account();
+	private function maybe_include_data(): void {
+		if ( \is_singular( 'orbis_sg_account' ) ) {
+			$item = $this->plugin->accounts->get_by_post_id( (int) \get_the_ID() );
 
-		if ( null === $account ) {
+			$card_heading = \__( 'SiteGround account data', 'orbis-siteground' );
+		} elseif ( \is_singular( 'orbis_sg_website' ) ) {
+			$item = $this->plugin->websites->get_by_post_id( (int) \get_the_ID() );
+
+			$card_heading = \__( 'SiteGround website data', 'orbis-siteground' );
+		} else {
 			return;
 		}
 
-		include __DIR__ . '/../templates/account-data.php';
-	}
-
-	/**
-	 * Get the account of the current singular account post.
-	 *
-	 * @return object|null
-	 */
-	private function get_singular_account(): ?object {
-		if ( ! \is_singular( 'orbis_sg_account' ) ) {
-			return null;
+		if ( null === $item ) {
+			return;
 		}
 
-		return $this->plugin->accounts->get_by_post_id( (int) \get_the_ID() );
+		include __DIR__ . '/../templates/data.php';
 	}
 }

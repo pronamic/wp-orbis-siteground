@@ -17,7 +17,7 @@ use InvalidArgumentException;
 /**
  * Import controller class
  *
- * Handles the upload of a SiteGround accounts JSON file.
+ * Handles the upload of a SiteGround accounts or websites JSON file.
  */
 final readonly class ImportController {
 	/**
@@ -49,7 +49,7 @@ final readonly class ImportController {
 	 */
 	private function handle_upload(): void {
 		if ( ! \current_user_can( 'manage_options' ) ) {
-			\wp_die( \esc_html__( 'You are not allowed to import SiteGround accounts.', 'orbis-siteground' ), 403 );
+			\wp_die( \esc_html__( 'You are not allowed to import SiteGround data.', 'orbis-siteground' ), 403 );
 		}
 
 		\check_admin_referer( 'orbis_siteground_import', 'orbis_siteground_import_nonce' );
@@ -57,13 +57,12 @@ final readonly class ImportController {
 		try {
 			$file = $this->get_uploaded_file();
 
-			$importer = new AccountImporter( $this->plugin->accounts );
-
-			$result = $importer->import_json( $file['contents'] );
+			[ 'type' => $type, 'result' => $result ] = $this->import_json( $file['contents'] );
 
 			\update_option(
-				'orbis_siteground_last_import',
+				'orbis_siteground_last_import_' . $type,
 				[
+					'type'      => $type,
 					'time'      => \time(),
 					'file_name' => \sanitize_file_name( $file['name'] ),
 					'user_id'   => \get_current_user_id(),
@@ -72,12 +71,46 @@ final readonly class ImportController {
 				false
 			);
 
-			$this->redirect( [ 'imported' => '1' ] );
+			$this->redirect( [ 'imported' => $type ] );
 		} catch ( InvalidArgumentException $e ) {
 			\set_transient( self::get_error_transient_key(), $e->getMessage(), 5 * \MINUTE_IN_SECONDS );
 
 			$this->redirect( [ 'import_error' => '1' ] );
 		}
+	}
+
+	/**
+	 * Import a SiteGround JSON string.
+	 *
+	 * Detects from the JSON whether it is a SiteGround accounts or websites
+	 * response and imports it with the matching importer.
+	 *
+	 * @param string $json JSON.
+	 * @return array{type: string, result: ImportResult} Import type (`accounts` or `websites`) and result.
+	 * @throws InvalidArgumentException When the JSON does not contain SiteGround accounts or websites.
+	 */
+	private function import_json( string $json ): array {
+		$data = \json_decode( $json, true );
+
+		if ( ! \is_array( $data ) ) {
+			throw new InvalidArgumentException( \__( 'The file does not contain valid JSON.', 'orbis-siteground' ) );
+		}
+
+		if ( isset( $data['data']['accounts'] ) && \is_array( $data['data']['accounts'] ) ) {
+			return [
+				'type'   => 'accounts',
+				'result' => ( new AccountImporter( $this->plugin->accounts ) )->import( $data['data']['accounts'] ),
+			];
+		}
+
+		if ( isset( $data['data']['websites'] ) && \is_array( $data['data']['websites'] ) ) {
+			return [
+				'type'   => 'websites',
+				'result' => ( new WebsiteImporter( $this->plugin->websites ) )->import( $data['data']['websites'] ),
+			];
+		}
+
+		throw new InvalidArgumentException( \__( 'The JSON does not contain SiteGround accounts (`data.accounts`) or websites (`data.websites`).', 'orbis-siteground' ) );
 	}
 
 	/**
@@ -88,7 +121,7 @@ final readonly class ImportController {
 	 */
 	private function get_uploaded_file(): array {
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Nonce is verified in `handle_upload`, file is validated below.
-		$file = $_FILES['orbis_siteground_accounts_file'] ?? null;
+		$file = $_FILES['orbis_siteground_file'] ?? null;
 
 		if ( ! \is_array( $file ) || ! isset( $file['error'], $file['tmp_name'], $file['name'] ) || \UPLOAD_ERR_OK !== $file['error'] ) {
 			throw new InvalidArgumentException( \__( 'No file was uploaded.', 'orbis-siteground' ) );

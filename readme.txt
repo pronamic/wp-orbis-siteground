@@ -9,7 +9,7 @@ Stable tag: 2.0.0
 License: GPL-3.0-or-later
 License URI: https://www.pronamic.eu/copyright/
 
-The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions.
+The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and websites and compares the accounts against Orbis subscriptions.
 
 == Description ==
 

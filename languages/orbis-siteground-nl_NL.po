@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Orbis SiteGround 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-orbis-siteground\n"
 "POT-Creation-Date: 2020-10-22 19:32:23+00:00\n"
-"PO-Revision-Date: 2026-10-03 19:13+0200\n"
+"PO-Revision-Date: 2026-10-03 19:47+0200\n"
 "Last-Translator: Reüel van der Steege <reuel@pronamic.nl>\n"
 "Language-Team: \n"
 "Language: nl\n"
@@ -14,7 +14,7 @@ msgstr ""
 "X-Generator: Poedit 3.9\n"
 
 #. Plugin Name of the plugin
-#: orbis-siteground.php:11 psr-4/AbilitiesController.php:68
+#: orbis-siteground.php:11 psr-4/AbilitiesController.php:69
 msgid "Orbis SiteGround"
 msgstr "Orbis SiteGround"
 
@@ -25,8 +25,8 @@ msgstr "https://www.orbiswp.com/"
 
 #. Description of the plugin
 #: orbis-siteground.php:13
-msgid "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions."
-msgstr "De Orbis SiteGround-plugin houdt een schaduwdatabase bij van SiteGround-hostingaccounts en vergelijkt deze met Orbis-abonnementen."
+msgid "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and websites and compares the accounts against Orbis subscriptions."
+msgstr "De Orbis SiteGround-plugin houdt een schaduwdatabase bij van SiteGround-hostingaccounts en -websites en vergelijkt de accounts met Orbis-abonnementen."
 
 #. Author of the plugin
 #: orbis-siteground.php:17
@@ -49,6 +49,7 @@ msgid "import SiteGround accounts"
 msgstr "importeer SiteGround-accounts"
 
 #: admin/page-comparison.php:53 templates/archive-orbis_sg_account.php:35
+#: templates/archive-orbis_sg_website.php:35
 msgid "Name"
 msgstr "Naam"
 
@@ -60,162 +61,225 @@ msgstr "Orbis"
 msgid "SiteGround"
 msgstr "SiteGround"
 
-#: admin/page-comparison.php:56 psr-4/AdminController.php:187
-#: templates/account-details.php:64 templates/archive-orbis_sg_account.php:36
+#: admin/page-comparison.php:56 psr-4/AdminController.php:200
+#: psr-4/AdminController.php:278 templates/account-details.php:64
+#: templates/archive-orbis_sg_account.php:36
+#: templates/archive-orbis_sg_website.php:37 templates/website-details.php:42
 msgid "Status"
 msgstr "Status"
 
-#: admin/page-import.php:38
-msgid "The SiteGround accounts have been imported."
-msgstr "De SiteGround-accounts zijn geïmporteerd."
-
-#. translators: 1: SiteGround Client Area page, 2: API endpoint
-#: admin/page-import.php:48
-#, php-format
-msgid "Upload the JSON response that SiteGround loads on the %1$s page (%2$s). New accounts are added, existing accounts are updated and accounts that are no longer in the file are marked as removed."
-msgstr "Upload het JSON-antwoord dat SiteGround laadt op de pagina %1$s (%2$s). Nieuwe accounts worden toegevoegd, bestaande accounts worden bijgewerkt en accounts die niet meer in het bestand staan worden als verwijderd gemarkeerd."
-
-#: admin/page-import.php:49
-msgid "Services → Hosting"
-msgstr "Services → Hosting"
-
-#: admin/page-import.php:64
-msgid "SiteGround accounts JSON file"
-msgstr "JSON-bestand met SiteGround-accounts"
-
-#: admin/page-import.php:72 psr-4/AdminController.php:72
-msgid "Import"
-msgstr "Importeren"
-
-#: admin/page-import.php:77
-msgid "Last import"
-msgstr "Laatste import"
-
-#: admin/page-import.php:84
-msgid "Date"
-msgstr "Datum"
-
-#: admin/page-import.php:85
-msgid "File"
-msgstr "Bestand"
-
-#: admin/page-import.php:86
-msgid "User"
-msgstr "Gebruiker"
-
-#: admin/page-import.php:87 psr-4/PostTypeController.php:41
+#: admin/page-import.php:24 psr-4/PostTypeController.php:41
 msgid "Accounts"
 msgstr "Accounts"
 
-#: admin/page-import.php:88 templates/account-details.php:41
+#: admin/page-import.php:25 admin/page-import.php:76
+#: psr-4/PostTypeController.php:79
+msgid "Websites"
+msgstr "Websites"
+
+#: admin/page-import.php:29
+msgid "The SiteGround accounts have been imported."
+msgstr "De SiteGround-accounts zijn geïmporteerd."
+
+#: admin/page-import.php:30
+msgid "The SiteGround websites have been imported."
+msgstr "De SiteGround-websites zijn geïmporteerd."
+
+#: admin/page-import.php:54
+msgid "Upload a JSON response from the SiteGround Client Area. The file type is detected automatically. New items are added, existing items are updated and items that are no longer in the file are marked as removed."
+msgstr "Upload een JSON-response uit de SiteGround Client Area. Het type bestand wordt automatisch herkend. Nieuwe items worden toegevoegd, bestaande items worden bijgewerkt en items die niet meer in het bestand staan worden als verwijderd gemarkeerd."
+
+#. translators: 1: SiteGround Client Area page, 2: API endpoint
+#: admin/page-import.php:63
+#, php-format
+msgid "Accounts: the response that SiteGround loads on the %1$s page (%2$s)."
+msgstr "Accounts: de response die SiteGround laadt op de pagina %1$s (%2$s)."
+
+#: admin/page-import.php:64
+msgid "Services → Hosting"
+msgstr "Services → Hosting"
+
+#. translators: 1: SiteGround Client Area page, 2: API endpoint
+#: admin/page-import.php:75
+#, php-format
+msgid "Websites: the response that SiteGround loads on the %1$s page (%2$s)."
+msgstr "Websites: de response die SiteGround laadt op de pagina %1$s (%2$s)."
+
+#: admin/page-import.php:92
+msgid "SiteGround JSON file"
+msgstr "SiteGround JSON-bestand"
+
+#: admin/page-import.php:100 psr-4/AdminController.php:82
+msgid "Import"
+msgstr "Importeren"
+
+#: admin/page-import.php:114
+msgid "Date"
+msgstr "Datum"
+
+#: admin/page-import.php:115
+msgid "File"
+msgstr "Bestand"
+
+#: admin/page-import.php:116
+msgid "User"
+msgstr "Gebruiker"
+
+#: admin/page-import.php:117
+msgid "Total"
+msgstr "Totaal"
+
+#: admin/page-import.php:118 templates/account-details.php:41
+#: templates/website-details.php:24
 msgid "Created"
 msgstr "Aangemaakt"
 
-#: admin/page-import.php:89
+#: admin/page-import.php:119
 msgid "Updated"
 msgstr "Bijgewerkt"
 
-#: admin/page-import.php:90
+#: admin/page-import.php:120
 msgid "Unchanged"
 msgstr "Ongewijzigd"
 
-#: admin/page-import.php:91
+#: admin/page-import.php:121
 msgid "Restored"
 msgstr "Hersteld"
 
-#: admin/page-import.php:92 psr-4/Helpers.php:85
-#: templates/account-details.php:50
+#: admin/page-import.php:122 psr-4/Helpers.php:85 psr-4/Helpers.php:128
+#: templates/account-details.php:50 templates/website-details.php:28
 msgid "Removed"
 msgstr "Verwijderd"
 
-#: psr-4/AbilitiesController.php:69
-msgid "Abilities for working with SiteGround hosting accounts in Orbis."
-msgstr "Abilities voor het werken met SiteGround-hostingaccounts in Orbis."
+#. translators: %s: import type, for example "Accounts"
+#: admin/page-import.php:132
+#, php-format
+msgid "Last import: %s"
+msgstr "Laatste import: %s"
 
-#: psr-4/AbilitiesController.php:87 psr-4/PostTypeController.php:45
+#: psr-4/AbilitiesController.php:70
+msgid "Abilities for working with SiteGround hosting accounts and websites in Orbis."
+msgstr "Abilities voor het werken met SiteGround-hostingaccounts en -websites in Orbis."
+
+#: psr-4/AbilitiesController.php:88 psr-4/PostTypeController.php:45
 msgid "Search SiteGround accounts"
 msgstr "SiteGround-accounts zoeken"
 
-#: psr-4/AbilitiesController.php:88
+#: psr-4/AbilitiesController.php:89
 msgid "Searches the SiteGround hosting accounts (one account per website/domain) that are imported into Orbis and returns their status, plan, server and expiration and billing dates. Accounts that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC."
 msgstr "Doorzoekt de SiteGround-hostingaccounts (één account per website/domein) die in Orbis zijn geïmporteerd en geeft hun status, pakket, server en verloop- en factuurdatums terug. Accounts die niet meer bij SiteGround aanwezig zijn worden uitgesloten, tenzij include_removed true is. Datums zijn in UTC."
 
-#: psr-4/AbilitiesController.php:96
+#: psr-4/AbilitiesController.php:97
 msgid "Search term, matched against the account name (domain name), the plan description, the server hostname, the server IP address and the data center."
 msgstr "Zoekterm, vergeleken met de accountnaam (domeinnaam), de pakketomschrijving, de hostnaam van de server, het IP-adres van de server en het datacenter."
 
-#: psr-4/AbilitiesController.php:100
+#: psr-4/AbilitiesController.php:101
 msgid "Limit the results to accounts with this SiteGround status."
 msgstr "Beperk de resultaten tot accounts met deze SiteGround-status."
 
-#: psr-4/AbilitiesController.php:106
+#: psr-4/AbilitiesController.php:107
 msgid "Limit the results to accounts with this SiteGround plan type, for example shared (StartUp), shared_plus (GrowBig), shared_geek (GoGeek) or cloud_lxc (Cloud)."
 msgstr "Beperk de resultaten tot accounts met dit SiteGround-pakkettype, bijvoorbeeld shared (StartUp), shared_plus (GrowBig), shared_geek (GoGeek) of cloud_lxc (Cloud)."
 
-#: psr-4/AbilitiesController.php:110
+#: psr-4/AbilitiesController.php:111
 msgid "Also return accounts that were not present in the latest SiteGround import."
 msgstr "Geef ook accounts terug die niet aanwezig waren in de laatste SiteGround-import."
 
-#: psr-4/AbilitiesController.php:116
+#: psr-4/AbilitiesController.php:117
 msgid "Only return accounts that expire before this date (YYYY-MM-DD)."
 msgstr "Geef alleen accounts terug die vóór deze datum verlopen (JJJJ-MM-DD)."
 
-#: psr-4/AbilitiesController.php:121
+#: psr-4/AbilitiesController.php:122
 msgid "Only return accounts that expire on or after this date (YYYY-MM-DD)."
 msgstr "Geef alleen accounts terug die op of na deze datum verlopen (JJJJ-MM-DD)."
 
-#: psr-4/AbilitiesController.php:125
+#: psr-4/AbilitiesController.php:126
 msgid "Maximum number of accounts to return."
 msgstr "Maximaal aantal accounts om terug te geven."
 
-#: psr-4/AbilitiesController.php:132
+#: psr-4/AbilitiesController.php:133 psr-4/AbilitiesController.php:236
 msgid "Page of results to return."
 msgstr "Pagina met resultaten om terug te geven."
 
-#: psr-4/AccountImporter.php:53
-msgid "The file does not contain valid JSON."
-msgstr "Het bestand bevat geen geldige JSON."
+#: psr-4/AbilitiesController.php:197 psr-4/PostTypeController.php:83
+msgid "Search SiteGround websites"
+msgstr "SiteGround-websites zoeken"
 
-#: psr-4/AccountImporter.php:57
-msgid "The JSON does not contain SiteGround accounts (`data.accounts`)."
-msgstr "De JSON bevat geen SiteGround-accounts (`data.accounts`)."
+#: psr-4/AbilitiesController.php:198
+msgid "Searches the SiteGround websites that are imported into Orbis and returns their domain, SiteGround account, status, CMS and server. One SiteGround account can host several websites. Websites that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC."
+msgstr "Zoekt in de SiteGround-websites die in Orbis zijn geïmporteerd en geeft hun domein, SiteGround-account, status, CMS en server terug. Eén SiteGround-account kan meerdere websites hosten. Websites die niet meer bij SiteGround aanwezig zijn worden uitgesloten, tenzij include_removed true is. Datums zijn in UTC."
 
-#: psr-4/AccountImporter.php:73
+#: psr-4/AbilitiesController.php:206
+msgid "Search term, matched against the domain name, the account name, the server hostname, the server IP address and the data center."
+msgstr "Zoekterm, vergeleken met de domeinnaam, de accountnaam, de hostnaam van de server, het IP-adres van de server en het datacenter."
+
+#: psr-4/AbilitiesController.php:210
+msgid "Limit the results to websites with this SiteGround status."
+msgstr "Beperk de resultaten tot websites met deze SiteGround-status."
+
+#: psr-4/AbilitiesController.php:216
+msgid "Limit the results to websites with this CMS, for example wordpress, woocommerce or general."
+msgstr "Beperk de resultaten tot websites met dit CMS, bijvoorbeeld wordpress, woocommerce of general."
+
+#: psr-4/AbilitiesController.php:220
+msgid "Limit the results to the websites of the SiteGround account with this SiteGround ID (siteground_id of the search-accounts ability)."
+msgstr "Beperk de resultaten tot de websites van het SiteGround-account met dit SiteGround-ID (siteground_id van de search-accounts-ability)."
+
+#: psr-4/AbilitiesController.php:224
+msgid "Also return websites that were not present in the latest SiteGround import."
+msgstr "Geef ook websites terug die niet aanwezig waren in de laatste SiteGround-import."
+
+#: psr-4/AbilitiesController.php:229
+msgid "Maximum number of websites to return."
+msgstr "Maximaal aantal websites om terug te geven."
+
+#: psr-4/AccountImporter.php:48
 msgid "The JSON does not contain any SiteGround accounts."
 msgstr "De JSON bevat geen enkel SiteGround-account."
 
-#: psr-4/AccountImporter.php:78
+#: psr-4/AccountImporter.php:57
 msgid "Every SiteGround account must have an `id` and a `name`."
 msgstr "Elk SiteGround-account moet een `id` en een `name` hebben."
 
-#: psr-4/AdminController.php:71
-msgid "Import SiteGround accounts"
-msgstr "SiteGround-accounts importeren"
+#: psr-4/AdminController.php:81
+msgid "Import SiteGround data"
+msgstr "SiteGround-gegevens importeren"
 
-#: psr-4/AdminController.php:80
+#: psr-4/AdminController.php:90
 msgid "Orbis SiteGround comparison"
 msgstr "Orbis SiteGround-vergelijking"
 
-#: psr-4/AdminController.php:81
+#: psr-4/AdminController.php:91
 msgid "Comparison"
 msgstr "Vergelijking"
 
-#: psr-4/AdminController.php:188 templates/account-details.php:36
+#: psr-4/AdminController.php:201 templates/account-details.php:36
 #: templates/archive-orbis_sg_account.php:37
 msgid "Plan"
 msgstr "Pakket"
 
-#: psr-4/AdminController.php:189 templates/account-details.php:38
-#: templates/archive-orbis_sg_account.php:38
+#: psr-4/AdminController.php:202 psr-4/AdminController.php:280
+#: templates/account-details.php:38 templates/archive-orbis_sg_account.php:38
+#: templates/archive-orbis_sg_website.php:39 templates/website-details.php:21
 msgid "Server"
 msgstr "Server"
 
-#: psr-4/AdminController.php:190 templates/account-details.php:42
+#: psr-4/AdminController.php:203 templates/account-details.php:42
 #: templates/archive-orbis_sg_account.php:39
 msgid "Expires"
 msgstr "Verloopt"
 
-#: psr-4/Helpers.php:65
+#: psr-4/AdminController.php:277 templates/archive-orbis_sg_website.php:36
+#: templates/website-details.php:47
+msgid "Account"
+msgstr "Account"
+
+#: psr-4/AdminController.php:279 templates/archive-orbis_sg_website.php:38
+#: templates/website-details.php:20
+msgid "CMS"
+msgstr "CMS"
+
+#: psr-4/Helpers.php:65 psr-4/Helpers.php:108
 msgid "Active"
 msgstr "Actief"
 
@@ -227,23 +291,43 @@ msgstr "Verloopt binnenkort"
 msgid "Expired"
 msgstr "Verlopen"
 
-#: psr-4/Helpers.php:78 templates/account-details.php:43
+#: psr-4/Helpers.php:78 psr-4/Helpers.php:121 templates/account-details.php:43
 msgid "Suspended"
 msgstr "Opgeschort"
 
-#: psr-4/ImportController.php:52
-msgid "You are not allowed to import SiteGround accounts."
-msgstr "Je hebt geen toestemming om SiteGround-accounts te importeren."
+#: psr-4/Helpers.php:109
+msgid "Offline mode"
+msgstr "Offlinemodus"
 
-#: psr-4/ImportController.php:94
+#: psr-4/Helpers.php:110
+msgid "Account expired"
+msgstr "Account verlopen"
+
+#: psr-4/Helpers.php:145
+msgid "General"
+msgstr "Algemeen"
+
+#: psr-4/ImportController.php:52
+msgid "You are not allowed to import SiteGround data."
+msgstr "Je hebt geen toestemming om SiteGround-gegevens te importeren."
+
+#: psr-4/ImportController.php:96
+msgid "The file does not contain valid JSON."
+msgstr "Het bestand bevat geen geldige JSON."
+
+#: psr-4/ImportController.php:113
+msgid "The JSON does not contain SiteGround accounts (`data.accounts`) or websites (`data.websites`)."
+msgstr "De JSON bevat geen SiteGround-accounts (`data.accounts`) of -websites (`data.websites`)."
+
+#: psr-4/ImportController.php:127
 msgid "No file was uploaded."
 msgstr "Er is geen bestand geüpload."
 
-#: psr-4/ImportController.php:98
+#: psr-4/ImportController.php:131
 msgid "The uploaded file is invalid."
 msgstr "Het geüploade bestand is ongeldig."
 
-#: psr-4/ImportController.php:104
+#: psr-4/ImportController.php:137
 msgid "The uploaded file could not be read."
 msgstr "Het geüploade bestand kon niet worden gelezen."
 
@@ -281,9 +365,55 @@ msgstr "Geen SiteGround-accounts gevonden"
 msgid "No SiteGround accounts found in Trash"
 msgstr "Geen SiteGround-accounts gevonden in de prullenbak"
 
-#: templates/account-data.php:27
-msgid "SiteGround data"
-msgstr "SiteGround-gegevens"
+#: psr-4/PostTypeController.php:75 templates/account-websites.php:25
+msgid "SiteGround websites"
+msgstr "SiteGround-websites"
+
+#: psr-4/PostTypeController.php:77
+msgctxt "post type general name"
+msgid "SiteGround websites"
+msgstr "SiteGround-websites"
+
+#: psr-4/PostTypeController.php:78
+msgctxt "post type singular name"
+msgid "SiteGround website"
+msgstr "SiteGround-website"
+
+#: psr-4/PostTypeController.php:80
+msgid "Edit SiteGround website"
+msgstr "SiteGround-website bewerken"
+
+#: psr-4/PostTypeController.php:81
+msgid "View SiteGround website"
+msgstr "SiteGround-website bekijken"
+
+#: psr-4/PostTypeController.php:82
+msgid "View SiteGround websites"
+msgstr "SiteGround-websites bekijken"
+
+#: psr-4/PostTypeController.php:84
+msgid "No SiteGround websites found"
+msgstr "Geen SiteGround-websites gevonden"
+
+#: psr-4/PostTypeController.php:85
+msgid "No SiteGround websites found in Trash"
+msgstr "Geen SiteGround-websites gevonden in de prullenbak"
+
+#: psr-4/TemplateController.php:130
+msgid "SiteGround account data"
+msgstr "SiteGround-accountgegevens"
+
+#: psr-4/TemplateController.php:134
+msgid "SiteGround website data"
+msgstr "SiteGround-websitegegevens"
+
+#: psr-4/WebsiteImporter.php:48
+msgid "The JSON does not contain any SiteGround websites."
+msgstr "De JSON bevat geen SiteGround-websites."
+
+#: psr-4/WebsiteImporter.php:57
+msgid "Every SiteGround website must have an `id` and a `domain`."
+msgstr "Elke SiteGround-website moet een `id` en een `domain` hebben."
 
 #. translators: %d: number of months
 #: templates/account-details.php:24
@@ -305,11 +435,11 @@ msgstr "Nee"
 msgid "Plan type"
 msgstr "Pakkettype"
 
-#: templates/account-details.php:39
+#: templates/account-details.php:39 templates/website-details.php:22
 msgid "IP address"
 msgstr "IP-adres"
 
-#: templates/account-details.php:40
+#: templates/account-details.php:40 templates/website-details.php:23
 msgid "Data center"
 msgstr "Datacenter"
 
@@ -325,18 +455,26 @@ msgstr "Factuurperiode"
 msgid "Auto renew"
 msgstr "Automatisch verlengen"
 
-#: templates/account-details.php:47
+#: templates/account-details.php:47 templates/website-details.php:25
 msgid "SiteGround ID"
 msgstr "SiteGround-ID"
 
-#: templates/account-details.php:48
+#: templates/account-details.php:48 templates/website-details.php:26
 msgid "First seen"
 msgstr "Eerst gezien"
 
-#: templates/account-details.php:49
+#: templates/account-details.php:49 templates/website-details.php:27
 msgid "Last seen"
 msgstr "Laatst gezien"
 
 #: templates/account-details.php:60
 msgid "SiteGround account"
 msgstr "SiteGround-account"
+
+#: templates/website-details.php:38
+msgid "SiteGround website"
+msgstr "SiteGround-website"
+
+#: templates/website-details.php:54
+msgid "Admin URL"
+msgstr "Beheer-URL"

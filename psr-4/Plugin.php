@@ -31,6 +31,13 @@ final class Plugin {
 	public readonly AccountRepository $accounts;
 
 	/**
+	 * Website repository.
+	 *
+	 * @var WebsiteRepository
+	 */
+	public readonly WebsiteRepository $websites;
+
+	/**
 	 * Return instance of this class.
 	 *
 	 * @param string $file Plugin file.
@@ -56,6 +63,7 @@ final class Plugin {
 		self::register_tables();
 
 		$this->accounts = new AccountRepository();
+		$this->websites = new WebsiteRepository();
 
 		\add_action( 'init', $this->maybe_install( ... ), 20 );
 
@@ -78,6 +86,7 @@ final class Plugin {
 		global $wpdb;
 
 		$wpdb->orbis_siteground_accounts = $wpdb->prefix . 'orbis_siteground_accounts';
+		$wpdb->orbis_siteground_websites = $wpdb->prefix . 'orbis_siteground_websites';
 	}
 
 	/**
@@ -100,7 +109,7 @@ final class Plugin {
 	 * @return void
 	 */
 	private function maybe_install(): void {
-		if ( '2.0.0' === \get_option( 'orbis_siteground_db_version' ) ) {
+		if ( '2.1.0' === \get_option( 'orbis_siteground_db_version' ) ) {
 			return;
 		}
 
@@ -108,7 +117,10 @@ final class Plugin {
 
 		\flush_rewrite_rules();
 
-		\update_option( 'orbis_siteground_db_version', '2.0.0' );
+		// The last import is stored per import type since version 2.1.0.
+		\delete_option( 'orbis_siteground_last_import' );
+
+		\update_option( 'orbis_siteground_db_version', '2.1.0' );
 	}
 
 	/**
@@ -153,6 +165,38 @@ final class Plugin {
 				KEY name (name),
 				KEY status (status),
 				KEY expires_at (expires_at),
+				KEY removed_at (removed_at)
+			) $charset_collate;
+			CREATE TABLE $wpdb->orbis_siteground_websites (
+				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				created_at DATETIME NOT NULL,
+				updated_at DATETIME NOT NULL,
+				post_id BIGINT(20) UNSIGNED DEFAULT NULL,
+				siteground_id VARCHAR(64) NOT NULL,
+				account_siteground_id VARCHAR(64) DEFAULT NULL,
+				domain VARCHAR(191) NOT NULL,
+				account_name VARCHAR(191) DEFAULT NULL,
+				status VARCHAR(32) NOT NULL,
+				account_status VARCHAR(32) DEFAULT NULL,
+				account_type VARCHAR(32) DEFAULT NULL,
+				cms VARCHAR(32) DEFAULT NULL,
+				admin_url VARCHAR(255) DEFAULT NULL,
+				server_id VARCHAR(64) DEFAULT NULL,
+				server_ip VARCHAR(45) DEFAULT NULL,
+				server_location VARCHAR(191) DEFAULT NULL,
+				datacenter_name VARCHAR(191) DEFAULT NULL,
+				siteground_created_at DATETIME DEFAULT NULL,
+				suspended TINYINT(3) UNSIGNED NOT NULL DEFAULT 0,
+				data LONGTEXT DEFAULT NULL,
+				first_seen_at DATETIME NOT NULL,
+				last_seen_at DATETIME NOT NULL,
+				removed_at DATETIME DEFAULT NULL,
+				PRIMARY KEY  (id),
+				UNIQUE KEY siteground_id (siteground_id),
+				UNIQUE KEY post_id (post_id),
+				KEY account_siteground_id (account_siteground_id),
+				KEY domain (domain),
+				KEY status (status),
 				KEY removed_at (removed_at)
 			) $charset_collate;
 			SQL;

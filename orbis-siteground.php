@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name:       Orbis SiteGround
  * Plugin URI:        https://www.orbiswp.com/
- * Description:       The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions.
+ * Description:       The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and websites and compares the accounts against Orbis subscriptions.
  * Version:           2.0.0
  * Requires at least: 6.9
  * Requires PHP:      8.2

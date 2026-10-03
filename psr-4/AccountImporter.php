@@ -12,133 +12,49 @@ declare(strict_types=1);
 
 namespace Pronamic\Orbis\SiteGround;
 
-use DateTimeImmutable;
-use DateTimeZone;
-use Exception;
-use InvalidArgumentException;
-
 /**
  * Account importer class
  *
- * Upserts the accounts from a SiteGround `GET /v1/accounts` response into the
- * shadow table and marks accounts that are no longer in the response as removed.
+ * Imports the accounts from a SiteGround `GET /v1/accounts` response.
  *
  * @link https://uapi.siteground.com/v1/accounts?sort_field=expires&sort_order=ASC
  */
-final readonly class AccountImporter {
+final readonly class AccountImporter extends Importer {
 	/**
-	 * Construct.
+	 * Get post type.
 	 *
-	 * @param AccountRepository $accounts Account repository.
+	 * @return string
 	 */
-	public function __construct(
-		/**
-		 * Account repository.
-		 */
-		private AccountRepository $accounts
-	) {
+	protected function get_post_type(): string {
+		return 'orbis_sg_account';
 	}
 
 	/**
-	 * Import a SiteGround accounts JSON string.
+	 * Check if a SiteGround account is valid.
 	 *
-	 * @param string $json JSON.
-	 * @return ImportResult
-	 * @throws InvalidArgumentException When the JSON does not contain SiteGround accounts.
+	 * @param array<mixed> $item SiteGround account.
+	 * @return bool
 	 */
-	public function import_json( string $json ): ImportResult {
-		$data = \json_decode( $json, true );
-
-		if ( ! \is_array( $data ) ) {
-			throw new InvalidArgumentException( \__( 'The file does not contain valid JSON.', 'orbis-siteground' ) );
-		}
-
-		if ( ! isset( $data['data']['accounts'] ) || ! \is_array( $data['data']['accounts'] ) ) {
-			throw new InvalidArgumentException( \__( 'The JSON does not contain SiteGround accounts (`data.accounts`).', 'orbis-siteground' ) );
-		}
-
-		return $this->import( $data['data']['accounts'] );
+	protected function is_valid_item( array $item ): bool {
+		return ! empty( $item['id'] ) && ! empty( $item['name'] );
 	}
 
 	/**
-	 * Import accounts.
+	 * Get the message for an import without accounts.
 	 *
-	 * @param array<int, mixed> $items SiteGround accounts.
-	 * @return ImportResult
-	 * @throws InvalidArgumentException When the accounts are empty or invalid.
+	 * @return string
 	 */
-	public function import( array $items ): ImportResult {
-		// An empty or invalid list would mark every account as removed, so refuse it.
-		if ( [] === $items ) {
-			throw new InvalidArgumentException( \__( 'The JSON does not contain any SiteGround accounts.', 'orbis-siteground' ) );
-		}
-
-		foreach ( $items as $item ) {
-			if ( ! \is_array( $item ) || empty( $item['id'] ) || empty( $item['name'] ) ) {
-				throw new InvalidArgumentException( \__( 'Every SiteGround account must have an `id` and a `name`.', 'orbis-siteground' ) );
-			}
-		}
-
-		$now = \current_time( 'mysql', true );
-
-		$result = new ImportResult();
-
-		foreach ( $items as $item ) {
-			$this->upsert( $item, $now, $result );
-		}
-
-		$result->removed = $this->accounts->mark_removed( $now );
-
-		return $result;
+	protected function get_empty_message(): string {
+		return \__( 'The JSON does not contain any SiteGround accounts.', 'orbis-siteground' );
 	}
 
 	/**
-	 * Upsert account.
+	 * Get the message for an import with invalid accounts.
 	 *
-	 * @param array<string, mixed> $item   SiteGround account.
-	 * @param string               $now    Import time (UTC, MySQL format).
-	 * @param ImportResult         $result Import result.
-	 * @return void
+	 * @return string
 	 */
-	private function upsert( array $item, string $now, ImportResult $result ): void {
-		$values = $this->map( $item );
-
-		$account = $this->accounts->get_by_siteground_id( $values['siteground_id'] );
-
-		if ( null === $account ) {
-			$values['post_id']       = $this->insert_post( $values );
-			$values['created_at']    = $now;
-			$values['updated_at']    = $now;
-			$values['first_seen_at'] = $now;
-			$values['last_seen_at']  = $now;
-
-			$this->accounts->insert( $values );
-
-			++$result->created;
-
-			return;
-		}
-
-		$values['post_id'] = $this->sync_post( $account, $values );
-
-		$changed = $this->has_changes( $account, $values );
-
-		$values['last_seen_at'] = $now;
-		$values['removed_at']   = null;
-
-		if ( $changed ) {
-			$values['updated_at'] = $now;
-		}
-
-		$this->accounts->update( (int) $account->id, $values );
-
-		if ( null !== $account->removed_at ) {
-			++$result->restored;
-		} elseif ( $changed ) {
-			++$result->updated;
-		} else {
-			++$result->unchanged;
-		}
+	protected function get_invalid_message(): string {
+		return \__( 'Every SiteGround account must have an `id` and a `name`.', 'orbis-siteground' );
 	}
 
 	/**
@@ -147,7 +63,7 @@ final readonly class AccountImporter {
 	 * @param array<string, mixed> $item SiteGround account.
 	 * @return array<string, mixed>
 	 */
-	private function map( array $item ): array {
+	protected function map( array $item ): array {
 		$server     = \is_array( $item['server'] ?? null ) ? $item['server'] : [];
 		$datacenter = \is_array( $item['datacenter'] ?? null ) ? $item['datacenter'] : [];
 		$billing    = \is_array( $item['billing_settings'] ?? null ) ? $item['billing_settings'] : [];
@@ -173,116 +89,12 @@ final readonly class AccountImporter {
 	}
 
 	/**
-	 * Check if the mapped values differ from the stored account.
-	 *
-	 * @param object               $account Stored account.
-	 * @param array<string, mixed> $values  Mapped values.
-	 * @return bool
-	 */
-	private function has_changes( object $account, array $values ): bool {
-		foreach ( $values as $key => $value ) {
-			$stored = $account->$key ?? null;
-
-			if ( ( null === $value ) !== ( null === $stored ) ) {
-				return true;
-			}
-
-			if ( null !== $value && (string) $value !== (string) $stored ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Insert post for account.
+	 * Get post title.
 	 *
 	 * @param array<string, mixed> $values Mapped values.
-	 * @return int|null Post ID.
+	 * @return string
 	 */
-	private function insert_post( array $values ): ?int {
-		$postarr = [
-			'post_type'   => 'orbis_sg_account',
-			'post_status' => 'publish',
-			'post_title'  => $values['name'],
-		];
-
-		if ( null !== $values['siteground_created_at'] ) {
-			$postarr['post_date_gmt'] = $values['siteground_created_at'];
-			$postarr['post_date']     = \get_date_from_gmt( $values['siteground_created_at'] );
-		}
-
-		$post_id = \wp_insert_post( $postarr, true );
-
-		return \is_wp_error( $post_id ) ? null : $post_id;
-	}
-
-	/**
-	 * Sync the post of an existing account.
-	 *
-	 * Recreates a deleted post, restores a trashed post and updates the title
-	 * when the account name changed.
-	 *
-	 * @param object               $account Stored account.
-	 * @param array<string, mixed> $values  Mapped values.
-	 * @return int|null Post ID.
-	 */
-	private function sync_post( object $account, array $values ): ?int {
-		$post = null === $account->post_id ? null : \get_post( (int) $account->post_id );
-
-		if ( null === $post ) {
-			return $this->insert_post( $values );
-		}
-
-		if ( 'trash' === $post->post_status ) {
-			\wp_untrash_post( $post->ID );
-		}
-
-		if ( 'publish' !== $post->post_status || $values['name'] !== $post->post_title ) {
-			\wp_update_post(
-				[
-					'ID'          => $post->ID,
-					'post_status' => 'publish',
-					'post_title'  => $values['name'],
-				]
-			);
-		}
-
-		return $post->ID;
-	}
-
-	/**
-	 * String or null.
-	 *
-	 * @param mixed $value Value.
-	 * @return string|null
-	 */
-	private function string_or_null( $value ): ?string {
-		if ( null === $value || '' === $value ) {
-			return null;
-		}
-
-		return \is_scalar( $value ) ? (string) $value : null;
-	}
-
-	/**
-	 * Convert an ISO 8601 date to a UTC MySQL datetime.
-	 *
-	 * @param mixed $value Value, for example `2026-09-05T08:20:25-05:00`.
-	 * @return string|null
-	 */
-	private function date_or_null( $value ): ?string {
-		if ( ! \is_string( $value ) || '' === $value ) {
-			return null;
-		}
-
-		try {
-			$date = new DateTimeImmutable( $value );
-		} catch ( Exception ) {
-			return null;
-		}
-
-		return $date->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
+	protected function get_post_title( array $values ): string {
+		return (string) $values['name'];
 	}
 }

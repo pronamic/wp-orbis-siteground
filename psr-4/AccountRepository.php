@@ -17,73 +17,16 @@ namespace Pronamic\Orbis\SiteGround;
  *
  * Reads and writes the `orbis_siteground_accounts` shadow table.
  */
-final class AccountRepository {
+final class AccountRepository extends Repository {
 	/**
-	 * Get account by SiteGround ID.
+	 * Get table name.
 	 *
-	 * @param string $siteground_id SiteGround account ID.
-	 * @return object|null
+	 * @return string
 	 */
-	public function get_by_siteground_id( string $siteground_id ): ?object {
+	protected function get_table(): string {
 		global $wpdb;
 
-		return $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM $wpdb->orbis_siteground_accounts WHERE siteground_id = %s;",
-				$siteground_id
-			)
-		);
-	}
-
-	/**
-	 * Get account by post ID.
-	 *
-	 * @param int $post_id Post ID.
-	 * @return object|null
-	 */
-	public function get_by_post_id( int $post_id ): ?object {
-		global $wpdb;
-
-		return $wpdb->get_row(
-			$wpdb->prepare(
-				"SELECT * FROM $wpdb->orbis_siteground_accounts WHERE post_id = %d;",
-				$post_id
-			)
-		);
-	}
-
-	/**
-	 * Get accounts by post IDs.
-	 *
-	 * @param int[] $post_ids Post IDs.
-	 * @return array<int, object> Accounts keyed by post ID.
-	 */
-	public function get_by_post_ids( array $post_ids ): array {
-		global $wpdb;
-
-		$post_ids = \array_filter( \array_map( intval( ... ), $post_ids ) );
-
-		if ( [] === $post_ids ) {
-			return [];
-		}
-
-		$placeholders = \implode( ', ', \array_fill( 0, \count( $post_ids ), '%d' ) );
-
-		$results = $wpdb->get_results(
-			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders are generated above.
-				"SELECT * FROM $wpdb->orbis_siteground_accounts WHERE post_id IN ( $placeholders );",
-				...$post_ids
-			)
-		);
-
-		$accounts = [];
-
-		foreach ( $results as $result ) {
-			$accounts[ (int) $result->post_id ] = $result;
-		}
-
-		return $accounts;
+		return $wpdb->orbis_siteground_accounts;
 	}
 
 	/**
@@ -181,51 +124,5 @@ final class AccountRepository {
 			'per_page' => $per_page,
 			'accounts' => $accounts,
 		];
-	}
-
-	/**
-	 * Insert account.
-	 *
-	 * @param array<string, mixed> $data Column values.
-	 * @return int Account ID.
-	 */
-	public function insert( array $data ): int {
-		global $wpdb;
-
-		$wpdb->insert( $wpdb->orbis_siteground_accounts, $data );
-
-		return (int) $wpdb->insert_id;
-	}
-
-	/**
-	 * Update account.
-	 *
-	 * @param int                  $id   Account ID.
-	 * @param array<string, mixed> $data Column values.
-	 * @return void
-	 */
-	public function update( int $id, array $data ): void {
-		global $wpdb;
-
-		$wpdb->update( $wpdb->orbis_siteground_accounts, $data, [ 'id' => $id ] );
-	}
-
-	/**
-	 * Mark accounts that were not seen in the import as removed.
-	 *
-	 * @param string $import_time Import time (UTC, MySQL format).
-	 * @return int Number of accounts marked as removed.
-	 */
-	public function mark_removed( string $import_time ): int {
-		global $wpdb;
-
-		return (int) $wpdb->query(
-			$wpdb->prepare(
-				"UPDATE $wpdb->orbis_siteground_accounts SET removed_at = %s, updated_at = %s WHERE removed_at IS NULL AND last_seen_at < %s;",
-				$import_time,
-				$import_time,
-				$import_time
-			)
-		);
 	}
 }

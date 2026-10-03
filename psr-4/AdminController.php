@@ -16,7 +16,7 @@ namespace Pronamic\Orbis\SiteGround;
  * Admin controller class
  *
  * The SiteGround admin menu is the menu of the account post type, with the
- * import and comparison pages added as sub pages.
+ * websites, import and comparison pages added as sub pages.
  */
 final class AdminController {
 	/**
@@ -25,6 +25,13 @@ final class AdminController {
 	 * @var array<int, object>|null
 	 */
 	private ?array $list_accounts = null;
+
+	/**
+	 * Websites of the posts in the current list table, keyed by post ID.
+	 *
+	 * @var array<int, object>|null
+	 */
+	private ?array $list_websites = null;
 
 	/**
 	 * Construct.
@@ -49,6 +56,9 @@ final class AdminController {
 
 		\add_filter( 'manage_orbis_sg_account_posts_columns', $this->posts_columns( ... ) );
 		\add_action( 'manage_orbis_sg_account_posts_custom_column', $this->posts_custom_column( ... ), 10, 2 );
+
+		\add_filter( 'manage_orbis_sg_website_posts_columns', $this->website_posts_columns( ... ) );
+		\add_action( 'manage_orbis_sg_website_posts_custom_column', $this->website_posts_custom_column( ... ), 10, 2 );
 	}
 
 	/**
@@ -68,7 +78,7 @@ final class AdminController {
 	private function admin_menu(): void {
 		\add_submenu_page(
 			'edit.php?post_type=orbis_sg_account',
-			\__( 'Import SiteGround accounts', 'orbis-siteground' ),
+			\__( 'Import SiteGround data', 'orbis-siteground' ),
 			\__( 'Import', 'orbis-siteground' ),
 			'manage_options',
 			'orbis_siteground_import',
@@ -91,7 +101,10 @@ final class AdminController {
 	 * @return void
 	 */
 	private function page_import(): void {
-		$last_import = \get_option( 'orbis_siteground_last_import' );
+		$last_imports = [
+			'accounts' => \get_option( 'orbis_siteground_last_import_accounts' ),
+			'websites' => \get_option( 'orbis_siteground_last_import_websites' ),
+		];
 
 		$error_key = ImportController::get_error_transient_key();
 
@@ -248,5 +261,82 @@ final class AdminController {
 		}
 
 		return $this->list_accounts[ $post_id ] ?? null;
+	}
+
+	/**
+	 * Website posts columns.
+	 *
+	 * @param array<string, string> $columns Columns.
+	 * @return array<string, string>
+	 */
+	private function website_posts_columns( array $columns ): array {
+		$date = $columns['date'] ?? null;
+
+		unset( $columns['date'] );
+
+		$columns['orbis_sg_account'] = \__( 'Account', 'orbis-siteground' );
+		$columns['orbis_sg_status']  = \__( 'Status', 'orbis-siteground' );
+		$columns['orbis_sg_cms']     = \__( 'CMS', 'orbis-siteground' );
+		$columns['orbis_sg_server']  = \__( 'Server', 'orbis-siteground' );
+
+		if ( null !== $date ) {
+			$columns['date'] = $date;
+		}
+
+		return $columns;
+	}
+
+	/**
+	 * Website posts custom column.
+	 *
+	 * @param string $column  Column.
+	 * @param int    $post_id Post ID.
+	 * @return void
+	 */
+	private function website_posts_custom_column( string $column, int $post_id ): void {
+		$website = $this->get_list_website( $post_id );
+
+		if ( null === $website ) {
+			return;
+		}
+
+		switch ( $column ) {
+			case 'orbis_sg_account':
+				Helpers::render_website_account_link( $website );
+
+				break;
+			case 'orbis_sg_status':
+				Helpers::render_website_status_badges( $website );
+
+				break;
+			case 'orbis_sg_cms':
+				echo \esc_html( Helpers::get_cms_label( $website->cms ) );
+
+				break;
+			case 'orbis_sg_server':
+				echo \esc_html( (string) ( $website->server_location ?? $website->datacenter_name ) );
+
+				break;
+		}
+	}
+
+	/**
+	 * Get website for a post in the list table.
+	 *
+	 * Fetches the websites of all posts in the list table with one query.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return object|null
+	 */
+	private function get_list_website( int $post_id ): ?object {
+		global $wp_query;
+
+		if ( null === $this->list_websites ) {
+			$post_ids = \wp_list_pluck( $wp_query->posts ?? [], 'ID' );
+
+			$this->list_websites = $this->plugin->websites->get_by_post_ids( $post_ids );
+		}
+
+		return $this->list_websites[ $post_id ] ?? null;
 	}
 }

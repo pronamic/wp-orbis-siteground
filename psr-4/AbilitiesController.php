@@ -52,6 +52,7 @@ final readonly class AbilitiesController {
 	 */
 	private function mcp_server_tools( $tools ) {
 		$tools[] = 'orbis-siteground/search-accounts';
+		$tools[] = 'orbis-siteground/search-websites';
 
 		return $tools;
 	}
@@ -66,7 +67,7 @@ final readonly class AbilitiesController {
 			'orbis-siteground',
 			[
 				'label'       => \__( 'Orbis SiteGround', 'orbis-siteground' ),
-				'description' => \__( 'Abilities for working with SiteGround hosting accounts in Orbis.', 'orbis-siteground' ),
+				'description' => \__( 'Abilities for working with SiteGround hosting accounts and websites in Orbis.', 'orbis-siteground' ),
 			]
 		);
 	}
@@ -189,6 +190,116 @@ final readonly class AbilitiesController {
 				],
 			]
 		);
+
+		\wp_register_ability(
+			'orbis-siteground/search-websites',
+			[
+				'label'               => \__( 'Search SiteGround websites', 'orbis-siteground' ),
+				'description'         => \__( 'Searches the SiteGround websites that are imported into Orbis and returns their domain, SiteGround account, status, CMS and server. One SiteGround account can host several websites. Websites that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC.', 'orbis-siteground' ),
+				'category'            => 'orbis-siteground',
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => [],
+					'properties'           => [
+						'search'          => [
+							'type'        => 'string',
+							'description' => \__( 'Search term, matched against the domain name, the account name, the server hostname, the server IP address and the data center.', 'orbis-siteground' ),
+						],
+						'status'          => [
+							'type'        => 'string',
+							'description' => \__( 'Limit the results to websites with this SiteGround status.', 'orbis-siteground' ),
+							'enum'        => [ 'any', 'active', 'offline_mode', 'account_expired' ],
+							'default'     => 'any',
+						],
+						'cms'             => [
+							'type'        => 'string',
+							'description' => \__( 'Limit the results to websites with this CMS, for example wordpress, woocommerce or general.', 'orbis-siteground' ),
+						],
+						'account_id'      => [
+							'type'        => 'string',
+							'description' => \__( 'Limit the results to the websites of the SiteGround account with this SiteGround ID (siteground_id of the search-accounts ability).', 'orbis-siteground' ),
+						],
+						'include_removed' => [
+							'type'        => 'boolean',
+							'description' => \__( 'Also return websites that were not present in the latest SiteGround import.', 'orbis-siteground' ),
+							'default'     => false,
+						],
+						'per_page'        => [
+							'type'        => 'integer',
+							'description' => \__( 'Maximum number of websites to return.', 'orbis-siteground' ),
+							'minimum'     => 1,
+							'maximum'     => 100,
+							'default'     => 20,
+						],
+						'page'            => [
+							'type'        => 'integer',
+							'description' => \__( 'Page of results to return.', 'orbis-siteground' ),
+							'minimum'     => 1,
+							'default'     => 1,
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'total'    => [ 'type' => 'integer' ],
+						'page'     => [ 'type' => 'integer' ],
+						'per_page' => [ 'type' => 'integer' ],
+						'websites' => [
+							'type'  => 'array',
+							'items' => [
+								'type'       => 'object',
+								'properties' => [
+									'id'            => [ 'type' => 'integer' ],
+									'post_id'       => [ 'type' => [ 'integer', 'null' ] ],
+									'url'           => $nullable_string,
+									'siteground_id' => [ 'type' => 'string' ],
+									'domain'        => [ 'type' => 'string' ],
+									'account'       => [
+										'type'       => 'object',
+										'properties' => [
+											'siteground_id' => $nullable_string,
+											'name'      => $nullable_string,
+											'post_id'   => [ 'type' => [ 'integer', 'null' ] ],
+											'url'       => $nullable_string,
+											'status'    => $nullable_string,
+											'plan_type' => $nullable_string,
+										],
+									],
+									'status'        => [ 'type' => 'string' ],
+									'cms'           => $nullable_string,
+									'admin_url'     => $nullable_string,
+									'server'        => [
+										'type'       => [ 'object', 'null' ],
+										'properties' => [
+											'ip'       => $nullable_string,
+											'location' => $nullable_string,
+										],
+									],
+									'datacenter'    => $nullable_string,
+									'created'       => $nullable_string,
+									'suspended'     => [ 'type' => 'boolean' ],
+									'first_seen_at' => [ 'type' => 'string' ],
+									'last_seen_at'  => [ 'type' => 'string' ],
+									'removed_at'    => $nullable_string,
+								],
+							],
+						],
+					],
+				],
+				'execute_callback'    => $this->search_websites( ... ),
+				'permission_callback' => fn() => \current_user_can( 'edit_posts' ),
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -243,6 +354,66 @@ final readonly class AbilitiesController {
 			'first_seen_at'     => $row->first_seen_at,
 			'last_seen_at'      => $row->last_seen_at,
 			'removed_at'        => $row->removed_at,
+		];
+	}
+
+	/**
+	 * Search websites.
+	 *
+	 * @param array<string, mixed>|null $input Input.
+	 * @return array<string, mixed>
+	 */
+	private function search_websites( $input = [] ): array {
+		$result = $this->plugin->websites->search( (array) $input );
+
+		$result['websites'] = \array_map( $this->format_website( ... ), $result['websites'] );
+
+		return $result;
+	}
+
+	/**
+	 * Format website row for ability output.
+	 *
+	 * @param object $row Database row.
+	 * @return array<string, mixed>
+	 */
+	private function format_website( object $row ): array {
+		$server = null;
+
+		if ( null !== $row->server_ip || null !== $row->server_location ) {
+			$server = [
+				'ip'       => $row->server_ip,
+				'location' => $row->server_location,
+			];
+		}
+
+		$post_id         = null === $row->post_id ? null : (int) $row->post_id;
+		$account_post_id = null === $row->account_post_id ? null : (int) $row->account_post_id;
+
+		return [
+			'id'            => (int) $row->id,
+			'post_id'       => $post_id,
+			'url'           => null === $post_id ? null : (string) \get_permalink( $post_id ),
+			'siteground_id' => $row->siteground_id,
+			'domain'        => $row->domain,
+			'account'       => [
+				'siteground_id' => $row->account_siteground_id,
+				'name'          => $row->account_name,
+				'post_id'       => $account_post_id,
+				'url'           => null === $account_post_id ? null : (string) \get_permalink( $account_post_id ),
+				'status'        => $row->account_status,
+				'plan_type'     => $row->account_type,
+			],
+			'status'        => $row->status,
+			'cms'           => $row->cms,
+			'admin_url'     => $row->admin_url,
+			'server'        => $server,
+			'datacenter'    => $row->datacenter_name,
+			'created'       => $row->siteground_created_at,
+			'suspended'     => (int) $row->suspended > 0,
+			'first_seen_at' => $row->first_seen_at,
+			'last_seen_at'  => $row->last_seen_at,
+			'removed_at'    => $row->removed_at,
 		];
 	}
 }
