@@ -147,6 +147,8 @@ final readonly class InvoiceService {
 			throw new InvalidArgumentException( \__( 'SiteGround invoice not found.', 'orbis-siteground' ) );
 		}
 
+		$data = self::normalize_data( $data );
+
 		$invoice_number = \trim( (string) ( $data['invoice_number'] ?? '' ) );
 		$invoice_date   = (string) ( $data['invoice_date'] ?? '' );
 
@@ -183,9 +185,9 @@ final readonly class InvoiceService {
 				'invoice_date'   => $invoice_date,
 				'currency'       => $this->string_or_null( $data['currency'] ?? null ),
 				'payment_method' => $this->string_or_null( $data['payment_method'] ?? null ),
-				'subtotal'       => (float) ( $data['totals']['subtotal'] ?? 0 ),
-				'vat_amount'     => (float) ( $data['totals']['vat_amount'] ?? 0 ),
-				'total'          => (float) ( $data['totals']['total'] ?? 0 ),
+				'subtotal'       => $data['totals']['subtotal'] ?? null,
+				'vat_amount'     => $data['totals']['vat_amount'] ?? null,
+				'total'          => $data['totals']['total'] ?? null,
 				'tax_scheme'     => $this->string_or_null( $data['tax']['scheme'] ?? null ),
 				'data'           => (string) \wp_json_encode( $data, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE ),
 			]
@@ -208,6 +210,69 @@ final readonly class InvoiceService {
 		}
 
 		return $invoice;
+	}
+
+	/**
+	 * Normalize the amounts of invoice data to numeric strings.
+	 *
+	 * Amounts are never processed as floats, to prevent floating point
+	 * rounding errors.
+	 *
+	 * @param array<string, mixed> $data Invoice data.
+	 * @return array<string, mixed>
+	 * @throws InvalidArgumentException When an amount is not numeric.
+	 */
+	public static function normalize_data( array $data ): array {
+		if ( isset( $data['totals'] ) && \is_array( $data['totals'] ) ) {
+			foreach ( [ 'subtotal', 'vat_amount', 'total' ] as $key ) {
+				if ( \array_key_exists( $key, $data['totals'] ) ) {
+					$data['totals'][ $key ] = self::normalize_amount( $data['totals'][ $key ] );
+				}
+			}
+		}
+
+		if ( isset( $data['line_items'] ) && \is_array( $data['line_items'] ) ) {
+			foreach ( $data['line_items'] as $index => $line_item ) {
+				if ( ! \is_array( $line_item ) ) {
+					continue;
+				}
+
+				foreach ( [ 'unit_price', 'line_total' ] as $key ) {
+					if ( \array_key_exists( $key, $line_item ) ) {
+						$data['line_items'][ $index ][ $key ] = self::normalize_amount( $line_item[ $key ] );
+					}
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Normalize an amount to a numeric string with at least two decimals.
+	 *
+	 * @param mixed $amount Amount.
+	 * @return string|null
+	 * @throws InvalidArgumentException When the amount is not numeric.
+	 */
+	public static function normalize_amount( $amount ): ?string {
+		if ( null === $amount ) {
+			return null;
+		}
+
+		$value = \is_string( $amount ) ? \trim( $amount ) : '';
+
+		if ( 1 !== \preg_match( '/^(-?)(\d+)(?:\.(\d+))?$/', $value, $matches ) ) {
+			throw new InvalidArgumentException(
+				\sprintf(
+					/* translators: %s: amount */
+					\__( 'The amount "%s" is not a numeric string.', 'orbis-siteground' ),
+					\is_scalar( $amount ) ? (string) $amount : \gettype( $amount )
+				)
+			);
+		}
+
+		return $matches[1] . $matches[2] . '.' . \str_pad( $matches[3] ?? '', 2, '0' );
 	}
 
 	/**

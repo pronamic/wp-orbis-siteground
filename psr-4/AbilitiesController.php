@@ -360,8 +360,9 @@ final readonly class AbilitiesController {
 			$line_items_schema['items'] = $invoice_schema['$defs']['line_item'];
 		}
 
-		$nullable_number = [
-			'type' => [ 'number', 'null' ],
+		$nullable_amount = [
+			'type'    => [ 'string', 'null' ],
+			'pattern' => '^-?\\d+\\.\\d{2}$',
 		];
 
 		$invoice_properties = [
@@ -383,9 +384,9 @@ final readonly class AbilitiesController {
 			'invoice_date'   => $nullable_string,
 			'currency'       => $nullable_string,
 			'payment_method' => $nullable_string,
-			'subtotal'       => $nullable_number,
-			'vat_amount'     => $nullable_number,
-			'total'          => $nullable_number,
+			'subtotal'       => $nullable_amount,
+			'vat_amount'     => $nullable_amount,
+			'total'          => $nullable_amount,
 			'tax_scheme'     => $nullable_string,
 			'line_items'     => $line_items_schema,
 		];
@@ -400,7 +401,7 @@ final readonly class AbilitiesController {
 			'orbis-siteground/search-invoices',
 			[
 				'label'               => \__( 'Search SiteGround invoices', 'orbis-siteground' ),
-				'description'         => \__( 'Searches the SiteGround invoice PDFs that are uploaded to Orbis, unprocessed invoices first and then newest first. An unprocessed invoice is a PDF that has been uploaded but whose data has not been registered yet: read it with the get-invoice ability and register the data with the update-invoice ability. Amounts are decimal numbers in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF.', 'orbis-siteground' ),
+				'description'         => \__( 'Searches the SiteGround invoice PDFs that are uploaded to Orbis, unprocessed invoices first and then newest first. An unprocessed invoice is a PDF that has been uploaded but whose data has not been registered yet: read it with the get-invoice ability and register the data with the update-invoice ability. Amounts are numeric strings, for example "14.99", in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF.', 'orbis-siteground' ),
 				'category'            => 'orbis-siteground',
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -802,8 +803,6 @@ final readonly class AbilitiesController {
 	 * @return array<string, mixed>
 	 */
 	private function format_invoice( object $row ): array {
-		$number_or_null = fn( $value ) => null === $value ? null : (float) $value;
-
 		return [
 			'_links'         => $this->get_invoice_links( $row ),
 			'id'             => (int) $row->id,
@@ -819,9 +818,9 @@ final readonly class AbilitiesController {
 			'invoice_date'   => $row->invoice_date,
 			'currency'       => $row->currency,
 			'payment_method' => $row->payment_method,
-			'subtotal'       => $number_or_null( $row->subtotal ),
-			'vat_amount'     => $number_or_null( $row->vat_amount ),
-			'total'          => $number_or_null( $row->total ),
+			'subtotal'       => $row->subtotal,
+			'vat_amount'     => $row->vat_amount,
+			'total'          => $row->total,
 			'tax_scheme'     => $row->tax_scheme,
 			'line_items'     => Helpers::get_invoice_line_items( $row ),
 		];

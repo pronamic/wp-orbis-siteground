@@ -47,16 +47,16 @@
 			}
 		},
 		"totals": {
-			"description": "Invoice totals. Amounts are decimal numbers without currency symbol, negative for credit notes.",
+			"description": "Invoice totals. Amounts are numeric strings without currency symbol, negative for credit notes.",
 			"type": "object",
 			"properties": {
 				"subtotal": {
 					"description": "Total excluding VAT.",
-					"type": "number"
+					"$ref": "#/$defs/amount"
 				},
 				"vat_amount": {
 					"description": "VAT amount.",
-					"type": "number"
+					"$ref": "#/$defs/amount"
 				},
 				"vat_rate_percent": {
 					"description": "VAT rate in percent, for example 21 or 0.",
@@ -64,7 +64,7 @@
 				},
 				"total": {
 					"description": "Total including VAT.",
-					"type": "number"
+					"$ref": "#/$defs/amount"
 				}
 			},
 			"required": [ "subtotal", "vat_amount", "vat_rate_percent", "total" ],
@@ -91,6 +91,11 @@
 	"required": [ "document_type", "invoice_number", "invoice_date", "currency", "payment_method", "supplier", "customer", "line_items", "totals", "tax" ],
 	"additionalProperties": false,
 	"$defs": {
+		"amount": {
+			"description": "Amount as a numeric string with a dot as decimal separator and without thousands separator or currency symbol, for example \"14.99\" or \"-14.99\". Never a JSON number, to prevent floating point rounding errors.",
+			"type": "string",
+			"pattern": "^-?\\d+(\\.\\d+)?$"
+		},
 		"address": {
 			"type": [ "object", "null" ],
 			"properties": {
@@ -179,11 +184,11 @@
 				},
 				"unit_price": {
 					"description": "Unit price excluding VAT.",
-					"type": "number"
+					"$ref": "#/$defs/amount"
 				},
 				"line_total": {
 					"description": "Line total excluding VAT.",
-					"type": "number"
+					"$ref": "#/$defs/amount"
 				}
 			},
 			"required": [ "description", "type", "product", "period", "domain", "quantity", "vat_rate_percent", "unit_price", "line_total" ],
