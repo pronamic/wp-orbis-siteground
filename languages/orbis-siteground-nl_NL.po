@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orbis SiteGround 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/orbis-siteground\n"
-"POT-Creation-Date: 2026-10-03T18:10:45+00:00\n"
+"POT-Creation-Date: 2026-10-03T21:22:54+00:00\n"
 "PO-Revision-Date: 2026-10-03 23:11+0200\n"
 "Last-Translator: Reüel van der Steege <reuel@pronamic.nl>\n"
 "Language-Team: \n"
@@ -764,7 +764,7 @@ msgstr "SiteGround-accountgegevens"
 msgid "SiteGround website data"
 msgstr "SiteGround-websitegegevens"
 
-#: psr-4/TemplateController.php:161
+#: psr-4/TemplateController.php:162
 msgid "SiteGround invoice data"
 msgstr "SiteGround-factuurgegevens"
 
@@ -908,6 +908,14 @@ msgstr "Aantal"
 #: templates/invoice-lines.php:38
 msgid "Unit price"
 msgstr "Stukprijs"
+
+#: templates/invoice-pdf.php:24 templates/invoice-pdf.php:30
+msgid "SiteGround invoice PDF"
+msgstr "PDF van SiteGround-factuur"
+
+#: templates/invoice-pdf.php:26
+msgid "Open PDF"
+msgstr "PDF openen"
 
 #: templates/invoice-text.php:25
 msgid "SiteGround invoice PDF text"

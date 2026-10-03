@@ -156,6 +156,7 @@ final readonly class TemplateController {
 				include __DIR__ . '/../templates/invoice-lines.php';
 			}
 
+			include __DIR__ . '/../templates/invoice-pdf.php';
 			include __DIR__ . '/../templates/invoice-text.php';
 
 			$card_heading = \__( 'SiteGround invoice data', 'orbis-siteground' );

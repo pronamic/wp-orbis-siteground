@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-03T21:10:43+00:00\n"
+"POT-Creation-Date: 2026-10-03T21:22:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: orbis-siteground\n"
@@ -811,7 +811,7 @@ msgstr ""
 msgid "SiteGround website data"
 msgstr ""
 
-#: psr-4/TemplateController.php:161
+#: psr-4/TemplateController.php:162
 msgid "SiteGround invoice data"
 msgstr ""
 
@@ -964,6 +964,15 @@ msgstr ""
 
 #: templates/invoice-lines.php:38
 msgid "Unit price"
+msgstr ""
+
+#: templates/invoice-pdf.php:24
+#: templates/invoice-pdf.php:30
+msgid "SiteGround invoice PDF"
+msgstr ""
+
+#: templates/invoice-pdf.php:26
+msgid "Open PDF"
 msgstr ""
 
 #: templates/invoice-text.php:25
