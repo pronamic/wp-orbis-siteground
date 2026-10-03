@@ -1,40 +1,43 @@
 <?php
 /**
- * Plugin Name: Orbis SiteGround
- * Plugin URI: https://www.orbiswp.com/
- * Description: The Orbis SiteGround plugin compares hosting packages domains against Orbis subscriptions.
+ * Orbis SiteGround
  *
- * Version: 1.0.0
- * Requires at least: 5.2
- *
- * Author: Pronamic
- * Author URI: https://www.pronamic.eu/
- *
- * Text Domain: orbis-siteground
- * Domain Path: /languages/
- *
- * License: GPL-3.0-or-later
- *
- * GitHub URI: https://github.com/wp-orbis/wp-orbis-siteground
- *
- * @author    Pronamic <info@pronamic.eu>
- * @copyright 2005-2020 Pronamic
+ * @author    Pronamic
+ * @copyright 2005-2026 Pronamic
  * @license   GPL-3.0-or-later
- * @package   Pronamic\WordPress\Orbis\SiteGround
- */
-
-/**
- * Orbis SiteGround bootstrap.
+ * @package   Pronamic\Orbis\SiteGround
  *
- * @return void
+ * @wordpress-plugin
+ * Plugin Name:       Orbis SiteGround
+ * Plugin URI:        https://www.orbiswp.com/
+ * Description:       The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions.
+ * Version:           2.0.0
+ * Requires at least: 6.9
+ * Requires PHP:      8.2
+ * Author:            Pronamic
+ * Author URI:        https://www.pronamic.eu/
+ * Text Domain:       orbis-siteground
+ * Domain Path:       /languages/
+ * License:           GPL-3.0-or-later
+ * GitHub URI:        https://github.com/wp-orbis/wp-orbis-siteground
  */
-function orbis_siteground_bootstrap() {
-	require_once 'classes/orbis-siteground-plugin.php';
-	require_once 'classes/orbis-siteground-admin.php';
 
-	global $orbis_siteground_plugin;
+declare(strict_types=1);
 
-	$orbis_siteground_plugin = new Orbis_SiteGround_Plugin( __FILE__ );
+namespace Pronamic\Orbis\SiteGround;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-add_action( 'orbis_bootstrap', 'orbis_siteground_bootstrap' );
+( static function (): void {
+	$autoload_path = __DIR__ . '/vendor/autoload_packages.php';
+
+	if ( \file_exists( $autoload_path ) ) {
+		require_once $autoload_path;
+	}
+
+	\register_activation_hook( __FILE__, [ Plugin::class, 'activate' ] );
+
+	Plugin::instance( __FILE__ );
+} )();

@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <ruleset name="Orbis SiteGround">
-	<config name="minimum_supported_wp_version" value="5.2"/>
+	<config name="minimum_supported_wp_version" value="6.9"/>
 
-	<config name="testVersion" value="5.6-"/>
+	<config name="testVersion" value="8.2-"/>
 
 	<file>.</file>
 
@@ -27,5 +27,14 @@
 		<exclude name="WordPress.Files.FileName"/>
 
 		<exclude name="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents"/>
+	</rule>
+
+	<rule ref="Universal.Arrays.DisallowShortArraySyntax">
+		<exclude-pattern>*</exclude-pattern>
+	</rule>
+
+	<!-- Exception messages are escaped where they are displayed. -->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<exclude-pattern>*</exclude-pattern>
 	</rule>
 </ruleset>

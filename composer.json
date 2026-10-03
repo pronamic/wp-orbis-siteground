@@ -1,33 +1,78 @@
 {
+    "name": "pronamic/wp-orbis-siteground",
+    "description": "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions.",
+    "license": "GPL-3.0-or-later",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "Pronamic\\Orbis\\SiteGround\\": "psr-4/"
+        }
+    },
     "config": {
+        "allow-plugins": {
+            "automattic/jetpack-autoloader": true,
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "roots/wordpress-core-installer": true
+        },
         "platform": {
-            "php": "5.6.20"
+            "php": "8.3"
         },
         "sort-packages": true
     },
     "require": {
-        "php": ">=5.6.20"
+        "php": ">=8.2",
+        "automattic/jetpack-autoloader": "^5.0 || ^6.0"
     },
     "require-dev": {
-        "composer/installers": "^1.9",
-        "dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+        "composer/installers": "^2.3",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "deployer/deployer": "^7.5",
         "phpcompatibility/php-compatibility": "^9.3",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "phpmd/phpmd": "^2.9",
-        "phpunit/phpunit": "^5.7",
-        "roots/wordpress": "^5.5",
-        "squizlabs/php_codesniffer": "^3.5",
-        "wp-coding-standards/wpcs": "2.3",
-        "wp-phpunit/wp-phpunit": "^5.5"
+        "phpmd/phpmd": "^2.15",
+        "phpunit/phpunit": "^9.6",
+        "rector/rector": "^2.6",
+        "roots/wordpress": "^6.8",
+        "squizlabs/php_codesniffer": "^3.13",
+        "wp-cli/dist-archive-command": "*",
+        "wp-cli/wp-cli-bundle": "*",
+        "wp-coding-standards/wpcs": "^3.1",
+        "wp-phpunit/wp-phpunit": "^6.8"
     },
     "scripts": {
+        "build": [
+            "rm -rf ./build/stage-1",
+            "rm -rf ./build/orbis-siteground/*",
+            "rm -f ./build/orbis-siteground.*.zip",
+            "rsync --recursive --verbose --exclude-from=.distignore --exclude=/vendor/ ./ ./build/stage-1/",
+            "composer install --no-dev --prefer-dist --optimize-autoloader --working-dir=./build/stage-1/",
+            "rsync --recursive --verbose --exclude-from=.distignore ./build/stage-1/ ./build/orbis-siteground/",
+            "vendor/bin/wp i18n make-pot ./build/orbis-siteground/ --slug=orbis-siteground",
+            "vendor/bin/wp i18n make-mo ./build/orbis-siteground/languages/",
+            "vendor/bin/wp dist-archive ./build/orbis-siteground/ --plugin-dirname=orbis-siteground --force"
+        ],
+        "deploy": [
+            "Composer\\Config::disableProcessTimeout",
+            "DEPLOYER_IMPORT=${DEPLOYER_IMPORT:-$HOME/deployer-orbis.php} vendor/bin/dep deploy"
+        ],
+        "dist-archive": "wp dist-archive . --plugin-dirname=orbis-siteground",
+        "make-pot": [
+            "@build",
+            "rsync --recursive --delete --verbose ./build/orbis-siteground/languages/ ./languages/",
+            "vendor/bin/wp i18n update-po ./languages/orbis-siteground.pot"
+        ],
         "phpcbf": "vendor/bin/phpcbf",
         "phpcs": "vendor/bin/phpcs -s -v",
-        "phplint": "find src tests -name '*.php' | xargs -n 1 -P 4 php -l",
-        "phpmd": "vendor/bin/phpmd src,tests text phpmd.ruleset.xml --suffixes php",
+        "phplint": "find admin psr-4 templates tests -name '*.php' | xargs -n 1 -P 4 php -l",
+        "phpmd": "vendor/bin/phpmd psr-4,tests text phpmd.ruleset.xml --suffixes php",
         "phpstan": "vendor/bin/phpstan analyse",
         "post-install-cmd": "echo 'Optionally run: composer bin all install'",
         "post-update-cmd": "echo 'Optionally run: composer bin all update'",
-        "psalm": "vendor/bin/psalm"
+        "psalm": "vendor/bin/psalm",
+        "rector": "vendor/bin/rector process"
+    },
+    "extra": {
+        "wp-slug": "orbis-siteground"
     }
 }

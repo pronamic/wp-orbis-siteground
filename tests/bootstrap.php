@@ -18,7 +18,7 @@ require_once getenv( 'WP_PHPUNIT__DIR' ) . '/includes/functions.php';
  * Manually load plugin.
  */
 function _manually_load_plugin() {
-	require dirname( __FILE__ ) . '/../orbis-siteground.php';
+	require __DIR__ . '/../orbis-siteground.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

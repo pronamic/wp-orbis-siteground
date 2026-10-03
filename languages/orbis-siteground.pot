@@ -1,65 +1,357 @@
-# Copyright (C) 2020 Pronamic
+# Copyright (C) 2026 Pronamic
 # This file is distributed under the GPL-3.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Orbis SiteGround 1.0.0\n"
-"Report-Msgid-Bugs-To: "
-"https://wordpress.org/support/plugin/wp-orbis-siteground\n"
-"POT-Creation-Date: 2020-10-22 19:32:23+00:00\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2020-MO-DA HO:MI+ZONE\n"
+"Project-Id-Version: Orbis SiteGround 2.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/orbis-siteground\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"X-Generator: grunt-wp-i18n 1.0.3\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-03T17:13:26+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: orbis-siteground\n"
 
-#: admin/page-orbis-siteground.php:23
-msgid "Upload SiteGround data"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:42
-msgid "Select SiteGround `services-hosting-accounts.json` file"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:44
-msgid "Select file"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:79
-msgid "Name"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:80
-msgid "Orbis"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:81 classes/orbis-siteground-admin.php:55
-msgid "SiteGround"
-msgstr ""
-
-#: admin/page-orbis-siteground.php:82
-msgid "Status"
-msgstr ""
-
-#. Plugin Name of the plugin/theme
+#. Plugin Name of the plugin
+#: orbis-siteground.php:11
+#: psr-4/AbilitiesController.php:68
 msgid "Orbis SiteGround"
 msgstr ""
 
-#. Plugin URI of the plugin/theme
+#. Plugin URI of the plugin
+#: orbis-siteground.php:12
 msgid "https://www.orbiswp.com/"
 msgstr ""
 
-#. Description of the plugin/theme
-msgid ""
-"The Orbis SiteGround plugin compares hosting packages domains against Orbis "
-"subscriptions."
+#. Description of the plugin
+#: orbis-siteground.php:13
+msgid "The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and compares them against Orbis subscriptions."
 msgstr ""
 
-#. Author of the plugin/theme
+#. Author of the plugin
+#: orbis-siteground.php:17
 msgid "Pronamic"
 msgstr ""
 
-#. Author URI of the plugin/theme
+#. Author URI of the plugin
+#: orbis-siteground.php:18
 msgid "https://www.pronamic.eu/"
+msgstr ""
+
+#. translators: %s: import page link
+#: admin/page-comparison.php:37
+#, php-format
+msgid "There are no SiteGround accounts yet, %s."
+msgstr ""
+
+#: admin/page-comparison.php:41
+msgid "import SiteGround accounts"
+msgstr ""
+
+#: admin/page-comparison.php:53
+#: templates/archive-orbis_sg_account.php:35
+msgid "Name"
+msgstr ""
+
+#: admin/page-comparison.php:54
+msgid "Orbis"
+msgstr ""
+
+#: admin/page-comparison.php:55
+#: psr-4/PostTypeController.php:48
+msgid "SiteGround"
+msgstr ""
+
+#: admin/page-comparison.php:56
+#: psr-4/AdminController.php:187
+#: templates/account-details.php:64
+#: templates/archive-orbis_sg_account.php:36
+msgid "Status"
+msgstr ""
+
+#: admin/page-import.php:38
+msgid "The SiteGround accounts have been imported."
+msgstr ""
+
+#. translators: 1: SiteGround Client Area page, 2: API endpoint
+#: admin/page-import.php:48
+#, php-format
+msgid "Upload the JSON response that SiteGround loads on the %1$s page (%2$s). New accounts are added, existing accounts are updated and accounts that are no longer in the file are marked as removed."
+msgstr ""
+
+#: admin/page-import.php:49
+msgid "Services → Hosting"
+msgstr ""
+
+#: admin/page-import.php:64
+msgid "SiteGround accounts JSON file"
+msgstr ""
+
+#: admin/page-import.php:72
+#: psr-4/AdminController.php:72
+msgid "Import"
+msgstr ""
+
+#: admin/page-import.php:77
+msgid "Last import"
+msgstr ""
+
+#: admin/page-import.php:84
+msgid "Date"
+msgstr ""
+
+#: admin/page-import.php:85
+msgid "File"
+msgstr ""
+
+#: admin/page-import.php:86
+msgid "User"
+msgstr ""
+
+#: admin/page-import.php:87
+#: psr-4/PostTypeController.php:41
+msgid "Accounts"
+msgstr ""
+
+#: admin/page-import.php:88
+#: templates/account-details.php:41
+msgid "Created"
+msgstr ""
+
+#: admin/page-import.php:89
+msgid "Updated"
+msgstr ""
+
+#: admin/page-import.php:90
+msgid "Unchanged"
+msgstr ""
+
+#: admin/page-import.php:91
+msgid "Restored"
+msgstr ""
+
+#: admin/page-import.php:92
+#: psr-4/Helpers.php:85
+#: templates/account-details.php:50
+msgid "Removed"
+msgstr ""
+
+#: psr-4/AbilitiesController.php:69
+msgid "Abilities for working with SiteGround hosting accounts in Orbis."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:87
+#: psr-4/PostTypeController.php:45
+msgid "Search SiteGround accounts"
+msgstr ""
+
+#: psr-4/AbilitiesController.php:88
+msgid "Searches the SiteGround hosting accounts (one account per website/domain) that are imported into Orbis and returns their status, plan, server and expiration and billing dates. Accounts that are no longer present at SiteGround are excluded unless include_removed is true. Dates are in UTC."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:96
+msgid "Search term, matched against the account name (domain name), the plan description, the server hostname, the server IP address and the data center."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:100
+msgid "Limit the results to accounts with this SiteGround status."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:106
+msgid "Limit the results to accounts with this SiteGround plan type, for example shared (StartUp), shared_plus (GrowBig), shared_geek (GoGeek) or cloud_lxc (Cloud)."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:110
+msgid "Also return accounts that were not present in the latest SiteGround import."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:116
+msgid "Only return accounts that expire before this date (YYYY-MM-DD)."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:121
+msgid "Only return accounts that expire on or after this date (YYYY-MM-DD)."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:125
+msgid "Maximum number of accounts to return."
+msgstr ""
+
+#: psr-4/AbilitiesController.php:132
+msgid "Page of results to return."
+msgstr ""
+
+#: psr-4/AccountImporter.php:53
+msgid "The file does not contain valid JSON."
+msgstr ""
+
+#: psr-4/AccountImporter.php:57
+msgid "The JSON does not contain SiteGround accounts (`data.accounts`)."
+msgstr ""
+
+#: psr-4/AccountImporter.php:73
+msgid "The JSON does not contain any SiteGround accounts."
+msgstr ""
+
+#: psr-4/AccountImporter.php:78
+msgid "Every SiteGround account must have an `id` and a `name`."
+msgstr ""
+
+#: psr-4/AdminController.php:71
+msgid "Import SiteGround accounts"
+msgstr ""
+
+#: psr-4/AdminController.php:80
+msgid "Orbis SiteGround comparison"
+msgstr ""
+
+#: psr-4/AdminController.php:81
+msgid "Comparison"
+msgstr ""
+
+#: psr-4/AdminController.php:188
+#: templates/account-details.php:36
+#: templates/archive-orbis_sg_account.php:37
+msgid "Plan"
+msgstr ""
+
+#: psr-4/AdminController.php:189
+#: templates/account-details.php:38
+#: templates/archive-orbis_sg_account.php:38
+msgid "Server"
+msgstr ""
+
+#: psr-4/AdminController.php:190
+#: templates/account-details.php:42
+#: templates/archive-orbis_sg_account.php:39
+msgid "Expires"
+msgstr ""
+
+#: psr-4/Helpers.php:65
+msgid "Active"
+msgstr ""
+
+#: psr-4/Helpers.php:66
+msgid "Expiring soon"
+msgstr ""
+
+#: psr-4/Helpers.php:67
+msgid "Expired"
+msgstr ""
+
+#: psr-4/Helpers.php:78
+#: templates/account-details.php:43
+msgid "Suspended"
+msgstr ""
+
+#: psr-4/ImportController.php:52
+msgid "You are not allowed to import SiteGround accounts."
+msgstr ""
+
+#: psr-4/ImportController.php:94
+msgid "No file was uploaded."
+msgstr ""
+
+#: psr-4/ImportController.php:98
+msgid "The uploaded file is invalid."
+msgstr ""
+
+#: psr-4/ImportController.php:104
+msgid "The uploaded file could not be read."
+msgstr ""
+
+#: psr-4/PostTypeController.php:37
+msgid "SiteGround accounts"
+msgstr ""
+
+#: psr-4/PostTypeController.php:39
+msgctxt "post type general name"
+msgid "SiteGround accounts"
+msgstr ""
+
+#: psr-4/PostTypeController.php:40
+msgctxt "post type singular name"
+msgid "SiteGround account"
+msgstr ""
+
+#: psr-4/PostTypeController.php:42
+msgid "Edit SiteGround account"
+msgstr ""
+
+#: psr-4/PostTypeController.php:43
+msgid "View SiteGround account"
+msgstr ""
+
+#: psr-4/PostTypeController.php:44
+msgid "View SiteGround accounts"
+msgstr ""
+
+#: psr-4/PostTypeController.php:46
+msgid "No SiteGround accounts found"
+msgstr ""
+
+#: psr-4/PostTypeController.php:47
+msgid "No SiteGround accounts found in Trash"
+msgstr ""
+
+#: templates/account-data.php:27
+msgid "SiteGround data"
+msgstr ""
+
+#. translators: %d: number of months
+#: templates/account-details.php:24
+#, php-format
+msgid "%d month"
+msgid_plural "%d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/account-details.php:32
+msgid "Yes"
+msgstr ""
+
+#: templates/account-details.php:32
+msgid "No"
+msgstr ""
+
+#: templates/account-details.php:37
+msgid "Plan type"
+msgstr ""
+
+#: templates/account-details.php:39
+msgid "IP address"
+msgstr ""
+
+#: templates/account-details.php:40
+msgid "Data center"
+msgstr ""
+
+#: templates/account-details.php:44
+msgid "Next billing date"
+msgstr ""
+
+#: templates/account-details.php:45
+msgid "Billing cycle"
+msgstr ""
+
+#: templates/account-details.php:46
+msgid "Auto renew"
+msgstr ""
+
+#: templates/account-details.php:47
+msgid "SiteGround ID"
+msgstr ""
+
+#: templates/account-details.php:48
+msgid "First seen"
+msgstr ""
+
+#: templates/account-details.php:49
+msgid "Last seen"
+msgstr ""
+
+#: templates/account-details.php:60
+msgid "SiteGround account"
 msgstr ""
