@@ -155,7 +155,7 @@
 			"type": "object",
 			"properties": {
 				"description": {
-					"description": "Line description, copied literally from the PDF.",
+					"description": "Line description, copied literally from the PDF. SiteGround descriptions are structured as '[Renewal: ]<period> <product> - <account name>', for example 'Renewal: 1 Year GrowBig Hosting - example.com'.",
 					"type": "string"
 				},
 				"type": {
@@ -171,8 +171,8 @@
 					"description": "Period as stated on the PDF, for example 1 year or 1 month.",
 					"type": [ "string", "null" ]
 				},
-				"domain": {
-					"description": "Domain name the line applies to, in lower case and without www, for example example.com.",
+				"account_name": {
+					"description": "Name of the SiteGround hosting account the line charges, copied literally from the description after the last ' - ', for example example.com in 'Renewal: 1 Year GrowBig Hosting - example.com'. Often a domain name, but it can be any name, for example a company name such as Lentis. Null when the description does not name an account.",
 					"type": [ "string", "null" ]
 				},
 				"quantity": {
@@ -191,7 +191,7 @@
 					"$ref": "#/$defs/amount"
 				}
 			},
-			"required": [ "description", "type", "product", "period", "domain", "quantity", "vat_rate_percent", "unit_price", "line_total" ],
+			"required": [ "description", "type", "product", "period", "account_name", "quantity", "vat_rate_percent", "unit_price", "line_total" ],
 			"additionalProperties": false
 		}
 	}

@@ -151,7 +151,7 @@ final class InvoiceRepository {
 	 * Search invoices.
 	 *
 	 * The search term is also matched against the file name and the JSON data,
-	 * so invoices can be found by the domain or product of an invoice line.
+	 * so invoices can be found by the account name or product of an invoice line.
 	 *
 	 * @param array{search?: string, status?: string, date_after?: string, date_before?: string, per_page?: int, page?: int} $args Arguments.
 	 * @return array{total: int, page: int, per_page: int, invoices: object[]}

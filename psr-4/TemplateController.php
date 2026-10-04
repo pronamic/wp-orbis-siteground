@@ -149,8 +149,8 @@ final readonly class TemplateController {
 				return;
 			}
 
-			$invoice  = $item;
-			$accounts = $this->plugin->accounts->get_by_names( Helpers::get_invoice_domains( $invoice ) );
+			$invoice = $item;
+			$lines   = $this->plugin->invoice_lines->get_by_invoice_id( (int) $invoice->id );
 
 			if ( null !== $invoice->processed_at ) {
 				include __DIR__ . '/../templates/invoice-lines.php';

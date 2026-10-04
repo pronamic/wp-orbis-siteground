@@ -37,6 +37,25 @@ final class Helpers {
 	}
 
 	/**
+	 * Format a MySQL date, without time zone conversion.
+	 *
+	 * @param string|null $value  MySQL date.
+	 * @param string      $format Date format.
+	 * @return string
+	 */
+	public static function format_day( ?string $value, string $format = 'j M Y' ): string {
+		if ( null === $value || '' === $value ) {
+			return '';
+		}
+
+		$utc = new DateTimeZone( 'UTC' );
+
+		$date = new DateTimeImmutable( $value, $utc );
+
+		return (string) \wp_date( $format, $date->getTimestamp(), $utc );
+	}
+
+	/**
 	 * Format a UTC MySQL datetime as a local date and time.
 	 *
 	 * @param string|null $value UTC MySQL datetime.
@@ -313,18 +332,67 @@ final class Helpers {
 	}
 
 	/**
-	 * Get the domains of the lines of an invoice.
+	 * Get the SiteGround hosting account names of the lines of an invoice.
 	 *
 	 * @param object $invoice Invoice.
 	 * @return string[]
 	 */
-	public static function get_invoice_domains( object $invoice ): array {
-		$domains = \array_map(
-			fn( array $line_item ) => (string) ( $line_item['domain'] ?? '' ),
-			self::get_invoice_line_items( $invoice )
-		);
+	public static function get_invoice_account_names( object $invoice ): array {
+		$account_names = \array_map( self::get_line_account_name( ... ), self::get_invoice_line_items( $invoice ) );
 
-		return \array_values( \array_unique( \array_filter( $domains ) ) );
+		return \array_values( \array_unique( \array_filter( $account_names ) ) );
+	}
+
+	/**
+	 * Get the SiteGround hosting account name of an invoice line.
+	 *
+	 * @param array<string, mixed> $line_item Invoice line item.
+	 * @return string|null
+	 */
+	public static function get_line_account_name( array $line_item ): ?string {
+		if ( isset( $line_item['account_name'] ) && \is_string( $line_item['account_name'] ) && '' !== \trim( $line_item['account_name'] ) ) {
+			return \trim( $line_item['account_name'] );
+		}
+
+		return self::parse_line_account_name( (string) ( $line_item['description'] ?? '' ) );
+	}
+
+	/**
+	 * Parse the SiteGround hosting account name from an invoice line description.
+	 *
+	 * SiteGround invoice line descriptions follow the structure
+	 * `[Renewal: ]<period> <product> - <account name>`, for example
+	 * `Renewal: 1 Year GrowBig Hosting - example.com`.
+	 *
+	 * @param string $description Invoice line description.
+	 * @return string|null
+	 */
+	public static function parse_line_account_name( string $description ): ?string {
+		$position = \strrpos( $description, ' - ' );
+
+		if ( false === $position ) {
+			return null;
+		}
+
+		$account_name = \trim( \substr( $description, $position + 3 ) );
+
+		return '' === $account_name ? null : $account_name;
+	}
+
+	/**
+	 * Parse the number of months of an invoice line period, for example `1 Year` or `1 month`.
+	 *
+	 * @param mixed $period Invoice line period.
+	 * @return int|null
+	 */
+	public static function parse_period_months( $period ): ?int {
+		if ( ! \is_string( $period ) || 1 !== \preg_match( '/(\d+)\s*(year|month)s?/i', $period, $matches ) ) {
+			return null;
+		}
+
+		$months = 'year' === \strtolower( $matches[2] ) ? 12 * (int) $matches[1] : (int) $matches[1];
+
+		return $months > 0 ? $months : null;
 	}
 
 	/**

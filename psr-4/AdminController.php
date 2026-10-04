@@ -406,10 +406,10 @@ final class AdminController {
 
 		unset( $columns['date'] );
 
-		$columns['orbis_sg_status']  = \__( 'Status', 'orbis-siteground' );
-		$columns['orbis_sg_domains'] = \__( 'Domains', 'orbis-siteground' );
-		$columns['orbis_sg_total']   = \__( 'Total', 'orbis-siteground' );
-		$columns['orbis_sg_pdf']     = \__( 'PDF', 'orbis-siteground' );
+		$columns['orbis_sg_status']   = \__( 'Status', 'orbis-siteground' );
+		$columns['orbis_sg_accounts'] = \__( 'Accounts', 'orbis-siteground' );
+		$columns['orbis_sg_total']    = \__( 'Total', 'orbis-siteground' );
+		$columns['orbis_sg_pdf']      = \__( 'PDF', 'orbis-siteground' );
 
 		if ( null !== $date ) {
 			$columns['date'] = $date;
@@ -443,8 +443,8 @@ final class AdminController {
 				Helpers::render_invoice_status_badge( $invoice );
 
 				break;
-			case 'orbis_sg_domains':
-				echo \esc_html( \implode( ', ', Helpers::get_invoice_domains( $invoice ) ) );
+			case 'orbis_sg_accounts':
+				echo \esc_html( \implode( ', ', Helpers::get_invoice_account_names( $invoice ) ) );
 
 				break;
 			case 'orbis_sg_total':

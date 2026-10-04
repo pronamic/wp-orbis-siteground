@@ -45,6 +45,13 @@ final class Plugin {
 	public readonly InvoiceRepository $invoices;
 
 	/**
+	 * Invoice line repository.
+	 *
+	 * @var InvoiceLineRepository
+	 */
+	public readonly InvoiceLineRepository $invoice_lines;
+
+	/**
 	 * Return instance of this class.
 	 *
 	 * @param string $file Plugin file.
@@ -73,6 +80,8 @@ final class Plugin {
 		$this->websites = new WebsiteRepository();
 		$this->invoices = new InvoiceRepository();
 
+		$this->invoice_lines = new InvoiceLineRepository();
+
 		\add_action( 'init', $this->maybe_install( ... ), 20 );
 
 		( new PostTypeController() )->setup();
@@ -97,6 +106,8 @@ final class Plugin {
 		$wpdb->orbis_siteground_accounts = $wpdb->prefix . 'orbis_siteground_accounts';
 		$wpdb->orbis_siteground_websites = $wpdb->prefix . 'orbis_siteground_websites';
 		$wpdb->orbis_siteground_invoices = $wpdb->prefix . 'orbis_siteground_invoices';
+
+		$wpdb->orbis_siteground_invoice_lines = $wpdb->prefix . 'orbis_siteground_invoice_lines';
 	}
 
 	/**
@@ -121,55 +132,102 @@ final class Plugin {
 	private function maybe_install(): void {
 		$db_version = \get_option( 'orbis_siteground_db_version' );
 
-		if ( '2.3.0' === $db_version ) {
+		if ( '2.4.0' === $db_version ) {
 			return;
 		}
 
 		$this->install();
 
-		if ( '2.2.0' === $db_version ) {
-			$this->upgrade_invoices_220();
-		}
+		$this->add_foreign_keys();
 
 		\flush_rewrite_rules();
 
-		// The last import is stored per import type since version 2.1.0.
-		\delete_option( 'orbis_siteground_last_import' );
-
-		\update_option( 'orbis_siteground_db_version', '2.3.0' );
+		\update_option( 'orbis_siteground_db_version', '2.4.0' );
 	}
 
 	/**
-	 * Upgrade the invoices table of version 2.2.0.
+	 * Add foreign keys.
 	 *
-	 * Since version 2.3.0 invoices are created by the PDF upload, before the
-	 * invoice data is known, so the invoice columns are nullable. `dbDelta`
-	 * does not change the nullability of existing columns.
+	 * `dbDelta` does not support foreign keys, so they are added separately
+	 * when they do not exist yet. References that would violate a foreign
+	 * key are cleaned up first.
 	 *
 	 * @return void
 	 */
-	private function upgrade_invoices_220(): void {
+	private function add_foreign_keys(): void {
 		global $wpdb;
 
-		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange -- `dbDelta` does not change the nullability of existing columns.
-		$wpdb->query(
-			"
-			ALTER TABLE $wpdb->orbis_siteground_invoices
-				MODIFY invoice_number VARCHAR(64) DEFAULT NULL,
-				MODIFY document_type VARCHAR(32) DEFAULT NULL,
-				MODIFY invoice_date DATE DEFAULT NULL,
-				MODIFY currency CHAR(3) DEFAULT NULL,
-				MODIFY subtotal DECIMAL(12,2) DEFAULT NULL,
-				MODIFY vat_amount DECIMAL(12,2) DEFAULT NULL,
-				MODIFY total DECIMAL(12,2) DEFAULT NULL,
-				MODIFY data LONGTEXT DEFAULT NULL
-			;
-			"
-		);
-		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$foreign_keys = [
+			[
+				'name'      => $wpdb->prefix . 'orbis_sg_accounts_post_id',
+				'table'     => $wpdb->orbis_siteground_accounts,
+				'column'    => 'post_id',
+				'reference' => "$wpdb->posts ( ID )",
+				'on_delete' => 'SET NULL',
+				'cleanup'   => "UPDATE $wpdb->orbis_siteground_accounts SET post_id = NULL WHERE post_id IS NOT NULL AND post_id NOT IN ( SELECT ID FROM $wpdb->posts );",
+			],
+			[
+				'name'      => $wpdb->prefix . 'orbis_sg_websites_post_id',
+				'table'     => $wpdb->orbis_siteground_websites,
+				'column'    => 'post_id',
+				'reference' => "$wpdb->posts ( ID )",
+				'on_delete' => 'SET NULL',
+				'cleanup'   => "UPDATE $wpdb->orbis_siteground_websites SET post_id = NULL WHERE post_id IS NOT NULL AND post_id NOT IN ( SELECT ID FROM $wpdb->posts );",
+			],
+			[
+				'name'      => $wpdb->prefix . 'orbis_sg_invoices_post_id',
+				'table'     => $wpdb->orbis_siteground_invoices,
+				'column'    => 'post_id',
+				'reference' => "$wpdb->posts ( ID )",
+				'on_delete' => 'SET NULL',
+				'cleanup'   => "UPDATE $wpdb->orbis_siteground_invoices SET post_id = NULL WHERE post_id IS NOT NULL AND post_id NOT IN ( SELECT ID FROM $wpdb->posts );",
+			],
+			[
+				'name'      => $wpdb->prefix . 'orbis_sg_invoice_lines_invoice_id',
+				'table'     => $wpdb->orbis_siteground_invoice_lines,
+				'column'    => 'invoice_id',
+				'reference' => "$wpdb->orbis_siteground_invoices ( id )",
+				'on_delete' => 'CASCADE',
+				'cleanup'   => "DELETE FROM $wpdb->orbis_siteground_invoice_lines WHERE invoice_id NOT IN ( SELECT id FROM $wpdb->orbis_siteground_invoices );",
+			],
+			[
+				'name'      => $wpdb->prefix . 'orbis_sg_invoice_lines_account_id',
+				'table'     => $wpdb->orbis_siteground_invoice_lines,
+				'column'    => 'account_id',
+				'reference' => "$wpdb->orbis_siteground_accounts ( id )",
+				'on_delete' => 'SET NULL',
+				'cleanup'   => "UPDATE $wpdb->orbis_siteground_invoice_lines SET account_id = NULL WHERE account_id IS NOT NULL AND account_id NOT IN ( SELECT id FROM $wpdb->orbis_siteground_accounts );",
+			],
+		];
 
-		// Invoices of version 2.2.0 were uploaded together with the invoice data.
-		$wpdb->query( "UPDATE $wpdb->orbis_siteground_invoices SET processed_at = updated_at WHERE processed_at IS NULL AND data IS NOT NULL;" );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- `dbDelta` does not support foreign keys, the queries are built from table names only.
+		foreach ( $foreign_keys as $foreign_key ) {
+			$exists = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = DATABASE() AND TABLE_NAME = %s AND CONSTRAINT_NAME = %s AND CONSTRAINT_TYPE = 'FOREIGN KEY';",
+					$foreign_key['table'],
+					$foreign_key['name']
+				)
+			);
+
+			if ( null !== $exists ) {
+				continue;
+			}
+
+			$wpdb->query( $foreign_key['cleanup'] );
+
+			$wpdb->query(
+				\sprintf(
+					'ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY ( %s ) REFERENCES %s ON DELETE %s;',
+					$foreign_key['table'],
+					$foreign_key['name'],
+					$foreign_key['column'],
+					$foreign_key['reference'],
+					$foreign_key['on_delete']
+				)
+			);
+		}
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -276,6 +334,32 @@ final class Plugin {
 				UNIQUE KEY post_id (post_id),
 				KEY invoice_date (invoice_date),
 				KEY processed_at (processed_at)
+			) $charset_collate;
+			CREATE TABLE $wpdb->orbis_siteground_invoice_lines (
+				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				created_at DATETIME NOT NULL,
+				updated_at DATETIME NOT NULL,
+				invoice_id BIGINT(20) UNSIGNED NOT NULL,
+				line_number SMALLINT(5) UNSIGNED NOT NULL,
+				account_id BIGINT(20) UNSIGNED DEFAULT NULL,
+				account_name VARCHAR(191) DEFAULT NULL,
+				description VARCHAR(255) NOT NULL,
+				type VARCHAR(32) DEFAULT NULL,
+				product VARCHAR(191) DEFAULT NULL,
+				period VARCHAR(32) DEFAULT NULL,
+				period_months SMALLINT(5) UNSIGNED DEFAULT NULL,
+				quantity DECIMAL(12,2) DEFAULT NULL,
+				vat_rate_percent DECIMAL(5,2) DEFAULT NULL,
+				unit_price DECIMAL(12,2) DEFAULT NULL,
+				line_total DECIMAL(12,2) DEFAULT NULL,
+				start_date DATE DEFAULT NULL,
+				end_date DATE DEFAULT NULL,
+				PRIMARY KEY  (id),
+				UNIQUE KEY invoice_line (invoice_id,line_number),
+				KEY account_id (account_id),
+				KEY account_name (account_name),
+				KEY start_date (start_date),
+				KEY end_date (end_date)
 			) $charset_collate;
 			SQL;
 

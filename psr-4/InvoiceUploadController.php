@@ -55,7 +55,7 @@ final readonly class InvoiceUploadController {
 
 		\check_admin_referer( 'orbis_siteground_upload_invoices', 'orbis_siteground_upload_invoices_nonce' );
 
-		$service = new InvoiceService( $this->plugin->invoices );
+		$service = new InvoiceService( $this->plugin->invoices, $this->plugin->accounts, $this->plugin->invoice_lines );
 
 		$results = [];
 

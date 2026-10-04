@@ -409,7 +409,7 @@ final readonly class AbilitiesController {
 					'properties'           => [
 						'search'      => [
 							'type'        => 'string',
-							'description' => \__( 'Search term, matched against the invoice number, the file name and all invoice data, for example a domain name or product of an invoice line.', 'orbis-siteground' ),
+							'description' => \__( 'Search term, matched against the invoice number, the file name and all invoice data, for example the hosting account name (often a domain name) or product of an invoice line.', 'orbis-siteground' ),
 						],
 						'status'      => [
 							'type'        => 'string',
@@ -783,7 +783,7 @@ final readonly class AbilitiesController {
 	private function update_invoice( $input = [] ) {
 		$input = (array) $input;
 
-		$service = new InvoiceService( $this->plugin->invoices );
+		$service = new InvoiceService( $this->plugin->invoices, $this->plugin->accounts, $this->plugin->invoice_lines );
 
 		try {
 			$invoice = $service->update( (int) ( $input['id'] ?? 0 ), (array) ( $input['invoice'] ?? [] ) );

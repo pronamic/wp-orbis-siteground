@@ -7,8 +7,8 @@
  * @license   GPL-3.0-or-later
  * @package   Pronamic\Orbis\SiteGround
  *
- * @var object                $invoice  SiteGround invoice.
- * @var array<string, object> $accounts SiteGround accounts of the line domains, keyed by name.
+ * @var object   $invoice SiteGround invoice.
+ * @var object[] $lines   SiteGround invoice lines.
  */
 
 namespace Pronamic\Orbis\SiteGround;
@@ -16,8 +16,6 @@ namespace Pronamic\Orbis\SiteGround;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-
-$line_items = Helpers::get_invoice_line_items( $invoice );
 
 $currency = (string) $invoice->currency;
 
@@ -33,7 +31,7 @@ $currency = (string) $invoice->currency;
 					<th><?php \esc_html_e( 'Type', 'orbis-siteground' ); ?></th>
 					<th><?php \esc_html_e( 'Product', 'orbis-siteground' ); ?></th>
 					<th><?php \esc_html_e( 'Period', 'orbis-siteground' ); ?></th>
-					<th><?php \esc_html_e( 'Domain', 'orbis-siteground' ); ?></th>
+					<th><?php \esc_html_e( 'Account', 'orbis-siteground' ); ?></th>
 					<th class="text-end"><?php \esc_html_e( 'Quantity', 'orbis-siteground' ); ?></th>
 					<th class="text-end"><?php \esc_html_e( 'Unit price', 'orbis-siteground' ); ?></th>
 					<th class="text-end"><?php \esc_html_e( 'VAT', 'orbis-siteground' ); ?></th>
@@ -42,35 +40,50 @@ $currency = (string) $invoice->currency;
 			</thead>
 			<tbody>
 
-				<?php foreach ( $line_items as $line_item ) : ?>
-
-					<?php
-
-					$line_domain = (string) ( $line_item['domain'] ?? '' );
-					$account     = $accounts[ $line_domain ] ?? null;
-
-					?>
+				<?php foreach ( $lines as $line ) : ?>
 
 					<tr>
-						<td><?php echo \esc_html( (string) ( $line_item['description'] ?? '' ) ); ?></td>
-						<td><?php echo \esc_html( Helpers::get_line_type_label( $line_item['type'] ?? null ) ); ?></td>
-						<td><?php echo \esc_html( (string) ( $line_item['product'] ?? '' ) ); ?></td>
-						<td><?php echo \esc_html( (string) ( $line_item['period'] ?? '' ) ); ?></td>
+						<td><?php echo \esc_html( (string) $line->description ); ?></td>
+						<td><?php echo \esc_html( Helpers::get_line_type_label( $line->type ) ); ?></td>
+						<td><?php echo \esc_html( (string) $line->product ); ?></td>
 						<td>
-							<?php if ( null !== $account && null !== $account->post_id ) : ?>
+							<?php echo \esc_html( (string) $line->period ); ?>
 
-								<a href="<?php echo \esc_url( (string) \get_permalink( (int) $account->post_id ) ); ?>"><?php echo \esc_html( $line_domain ); ?></a>
+							<?php if ( null !== $line->start_date && null !== $line->end_date ) : ?>
 
-							<?php else : ?>
+								<br />
+								<small class="text-muted text-nowrap">
+									<?php
 
-								<?php echo \esc_html( $line_domain ); ?>
+									echo \esc_html(
+										\sprintf(
+											/* translators: 1: start date, 2: end date */
+											\__( '%1$s – %2$s', 'orbis-siteground' ),
+											Helpers::format_day( $line->start_date ),
+											Helpers::format_day( $line->end_date )
+										)
+									);
+
+									?>
+								</small>
 
 							<?php endif; ?>
 						</td>
-						<td class="text-end"><?php echo \esc_html( \is_numeric( $line_item['quantity'] ?? null ) ? \number_format_i18n( (float) $line_item['quantity'] ) : '' ); ?></td>
-						<td class="text-end text-nowrap"><?php echo \esc_html( Helpers::format_amount( $line_item['unit_price'] ?? null, $currency ) ); ?></td>
-						<td class="text-end text-nowrap"><?php echo \esc_html( \is_numeric( $line_item['vat_rate_percent'] ?? null ) ? $line_item['vat_rate_percent'] . '%' : '' ); ?></td>
-						<td class="text-end text-nowrap"><?php echo \esc_html( Helpers::format_amount( $line_item['line_total'] ?? null, $currency ) ); ?></td>
+						<td>
+							<?php if ( null !== $line->account_post_id ) : ?>
+
+								<a href="<?php echo \esc_url( (string) \get_permalink( (int) $line->account_post_id ) ); ?>"><?php echo \esc_html( (string) $line->account_name ); ?></a>
+
+							<?php else : ?>
+
+								<?php echo \esc_html( (string) $line->account_name ); ?>
+
+							<?php endif; ?>
+						</td>
+						<td class="text-end"><?php echo \esc_html( null === $line->quantity ? '' : \number_format_i18n( (float) $line->quantity ) ); ?></td>
+						<td class="text-end text-nowrap"><?php echo \esc_html( Helpers::format_amount( $line->unit_price, $currency ) ); ?></td>
+						<td class="text-end text-nowrap"><?php echo \esc_html( null === $line->vat_rate_percent ? '' : \number_format_i18n( (float) $line->vat_rate_percent ) . '%' ); ?></td>
+						<td class="text-end text-nowrap"><?php echo \esc_html( Helpers::format_amount( $line->line_total, $currency ) ); ?></td>
 					</tr>
 
 				<?php endforeach; ?>

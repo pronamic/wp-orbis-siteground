@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Pronamic\Orbis\SiteGround;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 use RuntimeException;
 use Smalot\PdfParser\Parser;
@@ -30,19 +32,34 @@ use Throwable;
  *    updates the invoice with the structured data, valid against the
  *    `siteground-invoice` JSON schema, with the update invoice ability.
  *
+ * The lines of a processed invoice are stored in the invoice lines table,
+ * linked to the SiteGround hosting account and with the period the line
+ * applies to. The period is not on the invoice, it is derived from the
+ * account data.
+ *
  * @link https://github.com/pronamic/pronamic-spar-pos-data-hub/blob/7bfd0a7f0d1a545b04b0a0836d326f8817bc2007/psr-4/Pages/UploadStorePage.php#L97-L119
  */
 final readonly class InvoiceService {
 	/**
 	 * Construct.
 	 *
-	 * @param InvoiceRepository $repository Invoice repository.
+	 * @param InvoiceRepository     $repository Invoice repository.
+	 * @param AccountRepository     $accounts   Account repository.
+	 * @param InvoiceLineRepository $lines      Invoice line repository.
 	 */
 	public function __construct(
 		/**
 		 * Invoice repository.
 		 */
-		private InvoiceRepository $repository
+		private InvoiceRepository $repository,
+		/**
+		 * Account repository.
+		 */
+		private AccountRepository $accounts,
+		/**
+		 * Invoice line repository.
+		 */
+		private InvoiceLineRepository $lines
 	) {
 	}
 
@@ -209,7 +226,158 @@ final readonly class InvoiceService {
 			$invoice->post_id = $post_id;
 		}
 
+		$this->sync_lines( $invoice );
+
 		return $invoice;
+	}
+
+	/**
+	 * Sync the lines of an invoice to the invoice lines table.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return array<int, array<string, mixed>> Lines keyed by line number.
+	 */
+	public function sync_lines( object $invoice ): array {
+		$lines = $this->derive_lines( $invoice );
+
+		foreach ( $lines as $line_number => $line ) {
+			$this->lines->upsert( (int) $invoice->id, $line_number, $line );
+		}
+
+		$this->lines->delete_after( (int) $invoice->id, \count( $lines ) );
+
+		return $lines;
+	}
+
+	/**
+	 * Derive the lines of an invoice from the invoice data and the account data.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return array<int, array<string, mixed>> Lines keyed by line number.
+	 */
+	private function derive_lines( object $invoice ): array {
+		$line_items = Helpers::get_invoice_line_items( $invoice );
+
+		$account_names = \array_map( Helpers::get_line_account_name( ... ), $line_items );
+
+		$accounts = [];
+
+		foreach ( $this->accounts->get_by_names( \array_filter( $account_names ) ) as $name => $account ) {
+			$accounts[ \strtolower( $name ) ] = $account;
+		}
+
+		$lines = [];
+
+		foreach ( $line_items as $index => $line_item ) {
+			$account_name = $account_names[ $index ];
+
+			$account = null === $account_name ? null : ( $accounts[ \strtolower( $account_name ) ] ?? null );
+
+			$type = $this->string_or_null( $line_item['type'] ?? null );
+
+			$period_months = Helpers::parse_period_months( $line_item['period'] ?? null );
+
+			[ $start_date, $end_date ] = null === $invoice->invoice_date ? [ null, null ] : self::derive_period(
+				(string) $type,
+				(string) $invoice->invoice_date,
+				$period_months,
+				null === $account ? null : $account->expires_at
+			);
+
+			$lines[ $index + 1 ] = [
+				'account_id'       => null === $account ? null : (int) $account->id,
+				'account_name'     => $account_name,
+				'description'      => \mb_substr( (string) ( $line_item['description'] ?? '' ), 0, 255 ),
+				'type'             => $type,
+				'product'          => $this->string_or_null( $line_item['product'] ?? null ),
+				'period'           => $this->string_or_null( $line_item['period'] ?? null ),
+				'period_months'    => $period_months,
+				'quantity'         => $this->number_or_null( $line_item['quantity'] ?? null ),
+				'vat_rate_percent' => $this->number_or_null( $line_item['vat_rate_percent'] ?? null ),
+				'unit_price'       => $this->number_or_null( $line_item['unit_price'] ?? null ),
+				'line_total'       => $this->number_or_null( $line_item['line_total'] ?? null ),
+				'start_date'       => $start_date,
+				'end_date'         => $end_date,
+			];
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Derive the period of an invoice line.
+	 *
+	 * SiteGround bills a renewal some days before the account expires, the
+	 * renewal period starts at the expiration date. The expiration dates of
+	 * an account are a series with steps of the period, starting from the
+	 * current expiration date of the account. The start of a renewal is the
+	 * expiration date in that series closest to the invoice date.
+	 *
+	 * Other lines, and renewals without account data, start at the invoice date.
+	 *
+	 * @param string      $type          Line type, for example `renewal`.
+	 * @param string      $invoice_date  Invoice date in YYYY-MM-DD format.
+	 * @param int|null    $period_months Number of months of the line period.
+	 * @param string|null $expires_at    Current expiration date of the account (UTC MySQL datetime).
+	 * @return array{0: string|null, 1: string|null} Start date and end date in YYYY-MM-DD format.
+	 */
+	public static function derive_period( string $type, string $invoice_date, ?int $period_months, ?string $expires_at ): array {
+		if ( null === $period_months || $period_months < 1 ) {
+			return [ null, null ];
+		}
+
+		$utc = new DateTimeZone( 'UTC' );
+
+		$date = new DateTimeImmutable( \substr( $invoice_date, 0, 10 ), $utc );
+
+		if ( 'renewal' !== $type || null === $expires_at || '' === $expires_at ) {
+			return [
+				$date->format( 'Y-m-d' ),
+				self::add_months( $date, $period_months )->format( 'Y-m-d' ),
+			];
+		}
+
+		$anchor = new DateTimeImmutable( \substr( $expires_at, 0, 10 ), $utc );
+
+		$months = ( (int) $date->format( 'Y' ) - (int) $anchor->format( 'Y' ) ) * 12 + (int) $date->format( 'n' ) - (int) $anchor->format( 'n' );
+
+		$step = (int) \floor( $months / $period_months );
+
+		$best_step = $step;
+		$best_diff = null;
+
+		for ( $i = $step - 1; $i <= $step + 2; $i++ ) {
+			$candidate = self::add_months( $anchor, $i * $period_months );
+
+			$diff = \abs( $candidate->getTimestamp() - $date->getTimestamp() );
+
+			if ( null === $best_diff || $diff <= $best_diff ) {
+				$best_step = $i;
+				$best_diff = $diff;
+			}
+		}
+
+		return [
+			self::add_months( $anchor, $best_step * $period_months )->format( 'Y-m-d' ),
+			self::add_months( $anchor, ( $best_step + 1 ) * $period_months )->format( 'Y-m-d' ),
+		];
+	}
+
+	/**
+	 * Add months to a date, clamped to the last day of the month.
+	 *
+	 * For example 2026-01-31 plus 1 month is 2026-02-28.
+	 *
+	 * @param DateTimeImmutable $date   Date.
+	 * @param int               $months Number of months, can be negative.
+	 * @return DateTimeImmutable
+	 */
+	private static function add_months( DateTimeImmutable $date, int $months ): DateTimeImmutable {
+		$first = $date->modify( 'first day of this month' )->modify( \sprintf( '%+d months', $months ) );
+
+		$day = \min( (int) $date->format( 'j' ), (int) $first->format( 't' ) );
+
+		return $first->setDate( (int) $first->format( 'Y' ), (int) $first->format( 'n' ), $day );
 	}
 
 	/**
@@ -390,6 +558,22 @@ final readonly class InvoiceService {
 		\wp_update_post( $postarr );
 
 		return $post->ID;
+	}
+
+	/**
+	 * Number or null.
+	 *
+	 * Numbers are returned as strings, to prevent floating point rounding errors.
+	 *
+	 * @param mixed $value Value.
+	 * @return string|null
+	 */
+	private function number_or_null( $value ): ?string {
+		if ( \is_int( $value ) || \is_float( $value ) || ( \is_string( $value ) && \is_numeric( \trim( $value ) ) ) ) {
+			return \trim( (string) $value );
+		}
+
+		return null;
 	}
 
 	/**
