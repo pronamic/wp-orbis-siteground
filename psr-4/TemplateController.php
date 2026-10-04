@@ -137,6 +137,14 @@ final readonly class TemplateController {
 		if ( \is_singular( 'orbis_sg_account' ) ) {
 			$item = $this->plugin->accounts->get_by_post_id( (int) \get_the_ID() );
 
+			if ( null === $item ) {
+				return;
+			}
+
+			$lines = $this->plugin->invoice_lines->get_by_account_id( (int) $item->id );
+
+			include __DIR__ . '/../templates/account-invoices.php';
+
 			$card_heading = \__( 'SiteGround account data', 'orbis-siteground' );
 		} elseif ( \is_singular( 'orbis_sg_website' ) ) {
 			$item = $this->plugin->websites->get_by_post_id( (int) \get_the_ID() );

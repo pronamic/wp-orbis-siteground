@@ -52,6 +52,45 @@ final class InvoiceLineRepository {
 	}
 
 	/**
+	 * Get the invoice lines of an account.
+	 *
+	 * The lines include the invoice columns `invoice_number`, `invoice_date`,
+	 * `currency` and `invoice_post_id`, newest invoice first.
+	 *
+	 * @param int $account_id Account ID.
+	 * @return object[]
+	 */
+	public function get_by_account_id( int $account_id ): array {
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"
+				SELECT
+					line.*,
+					invoice.invoice_number,
+					invoice.invoice_date,
+					invoice.currency,
+					invoice.post_id AS invoice_post_id
+				FROM
+					$wpdb->orbis_siteground_invoice_lines AS line
+						INNER JOIN
+					$wpdb->orbis_siteground_invoices AS invoice
+							ON invoice.id = line.invoice_id
+				WHERE
+					line.account_id = %d
+				ORDER BY
+					invoice.invoice_date DESC,
+					invoice.id DESC,
+					line.line_number ASC
+				;
+				",
+				$account_id
+			)
+		);
+	}
+
+	/**
 	 * Insert or update an invoice line.
 	 *
 	 * @param int                  $invoice_id  Invoice ID.

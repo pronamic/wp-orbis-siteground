@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-03T21:22:54+00:00\n"
-"PO-Revision-Date: 2026-10-04T13:30:59+00:00\n"
+"PO-Revision-Date: 2026-10-04T13:41:12+00:00\n"
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
@@ -131,6 +131,7 @@ msgid "Import"
 msgstr "Importeren"
 
 #: admin/page-import.php:114
+#: templates/account-invoices.php:32
 #: templates/archive-orbis_sg_invoice.php:37
 #: templates/invoice-details.php:26
 msgid "Date"
@@ -146,6 +147,7 @@ msgstr "Gebruiker"
 
 #: admin/page-import.php:117
 #: psr-4/AdminController.php:411
+#: templates/account-invoices.php:35
 #: templates/archive-orbis_sg_invoice.php:39
 #: templates/invoice-details.php:29
 #: templates/invoice-lines.php:38
@@ -506,6 +508,7 @@ msgstr "CMS"
 
 #: psr-4/AdminController.php:412
 #: psr-4/Helpers.php:283
+#: templates/account-invoices.php:36
 #: templates/archive-orbis_sg_invoice.php:41
 #: templates/invoice-details.php:59
 msgid "PDF"
@@ -564,48 +567,49 @@ msgstr "Verwerkt"
 msgid "Unprocessed"
 msgstr "Onverwerkt"
 
-#: psr-4/Helpers.php:432
+#: psr-4/Helpers.php:427
+#: templates/account-invoices.php:31
 #: templates/archive-orbis_sg_invoice.php:35
 msgid "Invoice"
 msgstr "Factuur"
 
-#: psr-4/Helpers.php:433
+#: psr-4/Helpers.php:428
 msgid "Credit note"
 msgstr "Creditnota"
 
-#: psr-4/Helpers.php:447
+#: psr-4/Helpers.php:442
 msgid "Standard"
 msgstr "Standaard"
 
-#: psr-4/Helpers.php:448
+#: psr-4/Helpers.php:443
 msgid "Reverse charge"
 msgstr "Btw verlegd"
 
-#: psr-4/Helpers.php:449
+#: psr-4/Helpers.php:444
 msgid "Exempt"
 msgstr "Vrijgesteld"
 
-#: psr-4/Helpers.php:450
+#: psr-4/Helpers.php:445
 msgid "None"
 msgstr "Geen"
 
-#: psr-4/Helpers.php:464
+#: psr-4/Helpers.php:459
 msgid "New"
 msgstr "Nieuw"
 
-#: psr-4/Helpers.php:465
+#: psr-4/Helpers.php:460
 msgid "Renewal"
 msgstr "Verlenging"
 
-#: psr-4/Helpers.php:466
+#: psr-4/Helpers.php:461
 msgid "Upgrade"
 msgstr "Upgrade"
 
-#: psr-4/Helpers.php:467
+#: psr-4/Helpers.php:462
 msgid "Add-on"
 msgstr "Add-on"
 
-#: psr-4/Helpers.php:468
+#: psr-4/Helpers.php:463
 msgid "Other"
 msgstr "Overig"
 
@@ -769,6 +773,7 @@ msgid "No SiteGround websites found in Trash"
 msgstr "Geen SiteGround-websites gevonden in de prullenbak"
 
 #: psr-4/PostTypeController.php:111
+#: templates/account-invoices.php:25
 msgid "SiteGround invoices"
 msgstr "SiteGround-facturen"
 
@@ -806,15 +811,15 @@ msgstr "Geen SiteGround-facturen gevonden"
 msgid "No SiteGround invoices found in Trash"
 msgstr "Geen SiteGround-facturen gevonden in de prullenbak"
 
-#: psr-4/TemplateController.php:140
+#: psr-4/TemplateController.php:148
 msgid "SiteGround account data"
 msgstr "SiteGround-accountgegevens"
 
-#: psr-4/TemplateController.php:144
+#: psr-4/TemplateController.php:152
 msgid "SiteGround website data"
 msgstr "SiteGround-websitegegevens"
 
-#: psr-4/TemplateController.php:162
+#: psr-4/TemplateController.php:170
 msgid "SiteGround invoice data"
 msgstr "SiteGround-factuurgegevens"
 
@@ -887,10 +892,23 @@ msgstr "Laatst gezien"
 msgid "SiteGround account"
 msgstr "SiteGround-account"
 
+#: templates/account-invoices.php:33
 #: templates/archive-orbis_sg_invoice.php:38
 #: templates/invoice-lines.php:30
 msgid "Description"
 msgstr "Omschrijving"
+
+#: templates/account-invoices.php:34
+#: templates/invoice-lines.php:33
+msgid "Period"
+msgstr "Periode"
+
+#. translators: 1: start date, 2: end date
+#: templates/account-invoices.php:69
+#: templates/invoice-lines.php:61
+#, php-format
+msgid "%1$s – %2$s"
+msgstr "%1$s – %2$s"
 
 #: templates/archive-orbis_sg_invoice.php:40
 #: templates/invoice-details.php:28
@@ -953,10 +971,6 @@ msgstr "SiteGround-factuurregels"
 msgid "Product"
 msgstr "Product"
 
-#: templates/invoice-lines.php:33
-msgid "Period"
-msgstr "Periode"
-
 #: templates/invoice-lines.php:35
 msgid "Quantity"
 msgstr "Aantal"
@@ -964,12 +978,6 @@ msgstr "Aantal"
 #: templates/invoice-lines.php:36
 msgid "Unit price"
 msgstr "Stukprijs"
-
-#. translators: 1: start date, 2: end date
-#: templates/invoice-lines.php:61
-#, php-format
-msgid "%1$s – %2$s"
-msgstr "%1$s – %2$s"
 
 #: templates/invoice-pdf.php:24
 #: templates/invoice-pdf.php:30
