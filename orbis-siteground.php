@@ -12,7 +12,7 @@
  * Plugin URI:        https://www.orbiswp.com/
  * Description:       The Orbis SiteGround plugin keeps a shadow database of SiteGround hosting accounts and websites and compares the accounts against Orbis subscriptions.
  * Version:           2.0.0
- * Requires at least: 6.9
+ * Requires at least: 7.0
  * Requires PHP:      8.2
  * Author:            Pronamic
  * Author URI:        https://www.pronamic.eu/

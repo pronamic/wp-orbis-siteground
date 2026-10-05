@@ -36,6 +36,25 @@ final class InvoiceRepository {
 	}
 
 	/**
+	 * Get the IDs of the unprocessed invoices, oldest first.
+	 *
+	 * @param int $limit Maximum number of IDs, `0` for no limit.
+	 * @return int[]
+	 */
+	public function get_unprocessed_ids( int $limit = 0 ): array {
+		global $wpdb;
+
+		$sql = "SELECT id FROM $wpdb->orbis_siteground_invoices WHERE processed_at IS NULL ORDER BY id ASC";
+
+		if ( $limit > 0 ) {
+			$sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The limit is prepared above.
+		return \array_map( \intval( ... ), $wpdb->get_col( $sql ) );
+	}
+
+	/**
 	 * Get invoice by invoice number.
 	 *
 	 * @param string $invoice_number Invoice number.
@@ -95,7 +114,7 @@ final class InvoiceRepository {
 	public function get_by_post_ids( array $post_ids ): array {
 		global $wpdb;
 
-		$post_ids = \array_filter( \array_map( intval( ... ), $post_ids ) );
+		$post_ids = \array_filter( \array_map( \intval( ... ), $post_ids ) );
 
 		if ( [] === $post_ids ) {
 			return [];

@@ -89,6 +89,7 @@ final class Plugin {
 		( new InvoiceUploadController( $this ) )->setup();
 		( new TemplateController( $this ) )->setup();
 		( new AbilitiesController( $this ) )->setup();
+		( new CliController( $this ) )->setup();
 
 		if ( \is_admin() ) {
 			( new AdminController( $this ) )->setup();

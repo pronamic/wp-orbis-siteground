@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <ruleset name="Orbis SiteGround">
-	<config name="minimum_supported_wp_version" value="6.9"/>
+	<config name="minimum_supported_wp_version" value="7.0"/>
 
 	<config name="testVersion" value="8.2-"/>
 

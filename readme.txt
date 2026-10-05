@@ -2,7 +2,7 @@
 Contributors: pronamic, remcotolsma
 Donate link: https://www.orbiswp.com/
 Tags: orbis, siteground
-Requires at least: 6.9
+Requires at least: 7.0
 Requires PHP: 8.2
 Tested up to: 6.9
 Stable tag: 2.0.0

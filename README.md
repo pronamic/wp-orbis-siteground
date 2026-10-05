@@ -20,6 +20,23 @@ SiteGround only provides invoices as PDF. Invoices are processed in two steps:
 - Every invoice has an `orbis_sg_invoice` post (`/siteground/invoices/`).
 - Direct access to the PDFs is denied with a `.htaccess` file, logged in users download the PDF via `admin-post.php?action=orbis_siteground_invoice_pdf&invoice_id={id}`. `get-invoice` can also return the PDF base64 encoded (`include_pdf`).
 
+### AI processing (WP-CLI)
+
+With the WordPress AI client and an AI provider configured, invoices can also be processed from the command line. The stored PDF text is sent to the AI provider with the `siteground-invoice` JSON schema, the response is validated against the schema and the invoice is updated the same way as with `update-invoice`.
+
+```sh
+# Process one invoice, processed invoices are processed again.
+wp orbis siteground process-invoice 12
+
+# Print the extracted JSON without updating the invoice.
+wp orbis siteground process-invoice 12 --dry-run
+
+# Process the queue of unprocessed invoices, oldest first.
+wp orbis siteground process-invoices --limit=10
+```
+
+The argument is the ID in the SiteGround invoices table, not the WordPress post ID. Invoices that fail in the queue remain unprocessed and are reported, the command continues with the next invoice and exits with an error when one or more invoices failed.
+
 ### Invoice lines
 
 The lines of a processed invoice are also stored in the `orbis_siteground_invoice_lines` table, upserted on every `update-invoice`.
