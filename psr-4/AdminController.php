@@ -60,6 +60,7 @@ final class AdminController {
 	 */
 	public function setup(): void {
 		\add_action( 'admin_menu', $this->admin_menu( ... ) );
+		\add_action( 'admin_init', $this->register_settings( ... ) );
 
 		\add_filter( 'manage_orbis_sg_account_posts_columns', $this->posts_columns( ... ) );
 		\add_action( 'manage_orbis_sg_account_posts_custom_column', $this->posts_custom_column( ... ), 10, 2 );
@@ -123,6 +124,52 @@ final class AdminController {
 			'orbis_siteground_invoice_upload',
 			$this->page_invoice_upload( ... )
 		);
+
+		\add_submenu_page(
+			'edit.php?post_type=orbis_sg_account',
+			\__( 'Moneybird settings', 'orbis-siteground' ),
+			\__( 'Moneybird', 'orbis-siteground' ),
+			'manage_options',
+			'orbis_siteground_moneybird',
+			$this->page_moneybird( ... )
+		);
+	}
+
+	/**
+	 * Register the Moneybird settings.
+	 *
+	 * @return void
+	 */
+	private function register_settings(): void {
+		$settings = [
+			'orbis_siteground_moneybird_api_token',
+			'orbis_siteground_moneybird_administration_id',
+			'orbis_siteground_moneybird_contact_id',
+			'orbis_siteground_moneybird_ledger_account_id',
+			'orbis_siteground_moneybird_tax_rate_id',
+			'orbis_siteground_moneybird_start_date',
+		];
+
+		foreach ( $settings as $setting ) {
+			\register_setting(
+				'orbis_siteground_moneybird',
+				$setting,
+				[
+					'type'              => 'string',
+					'sanitize_callback' => fn( $value ) => \trim( \sanitize_text_field( (string) $value ) ),
+					'default'           => '',
+				]
+			);
+		}
+	}
+
+	/**
+	 * Page Moneybird.
+	 *
+	 * @return void
+	 */
+	private function page_moneybird(): void {
+		include __DIR__ . '/../admin/page-moneybird.php';
 	}
 
 	/**
@@ -406,10 +453,11 @@ final class AdminController {
 
 		unset( $columns['date'] );
 
-		$columns['orbis_sg_status']   = \__( 'Status', 'orbis-siteground' );
-		$columns['orbis_sg_accounts'] = \__( 'Accounts', 'orbis-siteground' );
-		$columns['orbis_sg_total']    = \__( 'Total', 'orbis-siteground' );
-		$columns['orbis_sg_pdf']      = \__( 'PDF', 'orbis-siteground' );
+		$columns['orbis_sg_status']    = \__( 'Status', 'orbis-siteground' );
+		$columns['orbis_sg_accounts']  = \__( 'Accounts', 'orbis-siteground' );
+		$columns['orbis_sg_total']     = \__( 'Total', 'orbis-siteground' );
+		$columns['orbis_sg_pdf']       = \__( 'PDF', 'orbis-siteground' );
+		$columns['orbis_sg_moneybird'] = \__( 'Moneybird', 'orbis-siteground' );
 
 		if ( null !== $date ) {
 			$columns['date'] = $date;
@@ -453,6 +501,10 @@ final class AdminController {
 				break;
 			case 'orbis_sg_pdf':
 				Helpers::render_invoice_pdf_link( $invoice );
+
+				break;
+			case 'orbis_sg_moneybird':
+				Helpers::render_invoice_moneybird_status( $invoice );
 
 				break;
 		}

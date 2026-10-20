@@ -38,6 +38,8 @@ $items = [
 	\__( 'SHA-256', 'orbis-siteground' )             => $invoice->file_sha256,
 	\__( 'Uploaded', 'orbis-siteground' )            => Helpers::format_datetime( $invoice->created_at ),
 	\__( 'Processed', 'orbis-siteground' )           => Helpers::format_datetime( $invoice->processed_at ),
+	\__( 'ID', 'orbis-siteground' )                  => $invoice->id,
+	\__( 'Post ID', 'orbis-siteground' )             => $invoice->post_id,
 ];
 
 $items = \array_filter(
@@ -59,6 +61,11 @@ $items = \array_filter(
 				<dt><?php \esc_html_e( 'PDF', 'orbis-siteground' ); ?></dt>
 				<dd>
 					<?php Helpers::render_invoice_pdf_link( $invoice ); ?>
+				</dd>
+
+				<dt><?php \esc_html_e( 'Moneybird', 'orbis-siteground' ); ?></dt>
+				<dd>
+					<?php Helpers::render_invoice_moneybird_status( $invoice ); ?>
 				</dd>
 
 				<?php foreach ( $items as $label => $value ) : ?>

@@ -366,29 +366,35 @@ final readonly class AbilitiesController {
 		];
 
 		$invoice_properties = [
-			'_links'         => $invoice_links,
-			'id'             => [ 'type' => 'integer' ],
-			'post_id'        => [ 'type' => [ 'integer', 'null' ] ],
-			'status'         => [
+			'_links'           => $invoice_links,
+			'id'               => [ 'type' => 'integer' ],
+			'post_id'          => [ 'type' => [ 'integer', 'null' ] ],
+			'status'           => [
 				'type'        => 'string',
 				'description' => \__( 'Unprocessed when the invoice data has not been registered yet with the update-invoice ability, processed otherwise.', 'orbis-siteground' ),
 				'enum'        => [ 'unprocessed', 'processed' ],
 			],
-			'file_name'      => [ 'type' => 'string' ],
-			'file_size'      => [ 'type' => 'integer' ],
-			'file_sha256'    => [ 'type' => 'string' ],
-			'uploaded_at'    => [ 'type' => 'string' ],
-			'processed_at'   => $nullable_string,
-			'invoice_number' => $nullable_string,
-			'document_type'  => $nullable_string,
-			'invoice_date'   => $nullable_string,
-			'currency'       => $nullable_string,
-			'payment_method' => $nullable_string,
-			'subtotal'       => $nullable_amount,
-			'vat_amount'     => $nullable_amount,
-			'total'          => $nullable_amount,
-			'tax_scheme'     => $nullable_string,
-			'line_items'     => $line_items_schema,
+			'file_name'        => [ 'type' => 'string' ],
+			'file_size'        => [ 'type' => 'integer' ],
+			'file_sha256'      => [ 'type' => 'string' ],
+			'uploaded_at'      => [ 'type' => 'string' ],
+			'processed_at'     => $nullable_string,
+			'invoice_number'   => $nullable_string,
+			'document_type'    => $nullable_string,
+			'invoice_date'     => $nullable_string,
+			'currency'         => $nullable_string,
+			'payment_method'   => $nullable_string,
+			'subtotal'         => $nullable_amount,
+			'vat_amount'       => $nullable_amount,
+			'total'            => $nullable_amount,
+			'tax_scheme'       => $nullable_string,
+			'moneybird_status' => [
+				'type'        => [ 'string', 'null' ],
+				'description' => \__( 'Moneybird state: pushed (created as purchase invoice by Orbis), linked (already in Moneybird), skipped (never pushed) or null (not in Moneybird yet).', 'orbis-siteground' ),
+				'enum'        => [ 'pushed', 'linked', 'skipped', null ],
+			],
+			'moneybird_id'     => $nullable_string,
+			'line_items'       => $line_items_schema,
 		];
 
 		$invoice_id = [
@@ -804,25 +810,27 @@ final readonly class AbilitiesController {
 	 */
 	private function format_invoice( object $row ): array {
 		return [
-			'_links'         => $this->get_invoice_links( $row ),
-			'id'             => (int) $row->id,
-			'post_id'        => null === $row->post_id ? null : (int) $row->post_id,
-			'status'         => null === $row->processed_at ? 'unprocessed' : 'processed',
-			'file_name'      => $row->file_name,
-			'file_size'      => (int) $row->file_size,
-			'file_sha256'    => $row->file_sha256,
-			'uploaded_at'    => $row->created_at,
-			'processed_at'   => $row->processed_at,
-			'invoice_number' => $row->invoice_number,
-			'document_type'  => $row->document_type,
-			'invoice_date'   => $row->invoice_date,
-			'currency'       => $row->currency,
-			'payment_method' => $row->payment_method,
-			'subtotal'       => $row->subtotal,
-			'vat_amount'     => $row->vat_amount,
-			'total'          => $row->total,
-			'tax_scheme'     => $row->tax_scheme,
-			'line_items'     => Helpers::get_invoice_line_items( $row ),
+			'_links'           => $this->get_invoice_links( $row ),
+			'id'               => (int) $row->id,
+			'post_id'          => null === $row->post_id ? null : (int) $row->post_id,
+			'status'           => null === $row->processed_at ? 'unprocessed' : 'processed',
+			'file_name'        => $row->file_name,
+			'file_size'        => (int) $row->file_size,
+			'file_sha256'      => $row->file_sha256,
+			'uploaded_at'      => $row->created_at,
+			'processed_at'     => $row->processed_at,
+			'invoice_number'   => $row->invoice_number,
+			'document_type'    => $row->document_type,
+			'invoice_date'     => $row->invoice_date,
+			'currency'         => $row->currency,
+			'payment_method'   => $row->payment_method,
+			'subtotal'         => $row->subtotal,
+			'vat_amount'       => $row->vat_amount,
+			'total'            => $row->total,
+			'tax_scheme'       => $row->tax_scheme,
+			'moneybird_status' => $row->moneybird_status,
+			'moneybird_id'     => $row->moneybird_id,
+			'line_items'       => Helpers::get_invoice_line_items( $row ),
 		];
 	}
 
@@ -846,6 +854,15 @@ final readonly class AbilitiesController {
 			'href'  => Helpers::get_invoice_pdf_url( $invoice ),
 			'title' => \__( 'Original PDF of this SiteGround invoice, only accessible when logged in to Orbis.', 'orbis-siteground' ),
 		];
+
+		$moneybird_url = MoneybirdService::get_url( $invoice );
+
+		if ( null !== $moneybird_url ) {
+			$links['moneybird'] = [
+				'href'  => $moneybird_url,
+				'title' => \__( 'Purchase invoice of this SiteGround invoice in Moneybird.', 'orbis-siteground' ),
+			];
+		}
 
 		return $links;
 	}

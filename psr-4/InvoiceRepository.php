@@ -55,6 +55,96 @@ final class InvoiceRepository {
 	}
 
 	/**
+	 * Get the IDs of the invoices to push to Moneybird, oldest first.
+	 *
+	 * Processed invoices without a Moneybird status, dated on or after the start date.
+	 *
+	 * @param string $start_date Start date in YYYY-MM-DD format.
+	 * @param int    $limit      Maximum number of IDs, `0` for no limit.
+	 * @return int[]
+	 */
+	public function get_moneybird_queue_ids( string $start_date, int $limit = 0 ): array {
+		global $wpdb;
+
+		$sql = $wpdb->prepare(
+			<<<SQL
+				SELECT
+					id
+				FROM
+					$wpdb->orbis_siteground_invoices
+				WHERE
+					processed_at IS NOT NULL
+						AND
+					moneybird_status IS NULL
+						AND
+					invoice_date >= %s
+				ORDER BY
+					invoice_date ASC,
+					id ASC
+				SQL,
+			$start_date
+		);
+
+		if ( $limit > 0 ) {
+			$sql .= $wpdb->prepare( ' LIMIT %d', $limit );
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- The query is prepared above.
+		return \array_map( \intval( ... ), $wpdb->get_col( $sql ) );
+	}
+
+	/**
+	 * Get the processed invoices without a Moneybird status, dated before a date.
+	 *
+	 * @param string $date Date in YYYY-MM-DD format.
+	 * @return object[]
+	 */
+	public function get_moneybird_open_before( string $date ): array {
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				<<<SQL
+					SELECT
+						*
+					FROM
+						$wpdb->orbis_siteground_invoices
+					WHERE
+						processed_at IS NOT NULL
+							AND
+						moneybird_status IS NULL
+							AND
+						invoice_date < %s
+					ORDER BY
+						invoice_date ASC,
+						id ASC
+					;
+					SQL,
+				$date
+			)
+		);
+	}
+
+	/**
+	 * Get the invoices with an invoice number, keyed by the lowercase invoice number.
+	 *
+	 * @return array<string, object>
+	 */
+	public function get_by_invoice_numbers(): array {
+		global $wpdb;
+
+		$results = $wpdb->get_results( "SELECT * FROM $wpdb->orbis_siteground_invoices WHERE invoice_number IS NOT NULL;" );
+
+		$invoices = [];
+
+		foreach ( $results as $result ) {
+			$invoices[ \strtolower( \trim( (string) $result->invoice_number ) ) ] = $result;
+		}
+
+		return $invoices;
+	}
+
+	/**
 	 * Get invoice by invoice number.
 	 *
 	 * @param string $invoice_number Invoice number.

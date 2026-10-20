@@ -32,12 +32,15 @@ $siteground_invoices = Plugin::instance()->invoices->get_by_post_ids( \wp_list_p
 			<table class="table table-striped table-condense table-hover">
 				<thead>
 					<tr>
+						<th><?php \esc_html_e( 'ID', 'orbis-siteground' ); ?></th>
+						<th><?php \esc_html_e( 'Post ID', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Invoice', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Status', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Date', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Description', 'orbis-siteground' ); ?></th>
 						<th class="text-end"><?php \esc_html_e( 'Total', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'VAT', 'orbis-siteground' ); ?></th>
+						<th><?php \esc_html_e( 'Moneybird', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'PDF', 'orbis-siteground' ); ?></th>
 					</tr>
 				</thead>
@@ -53,6 +56,12 @@ $siteground_invoices = Plugin::instance()->invoices->get_by_post_ids( \wp_list_p
 
 						<tr id="post-<?php \the_ID(); ?>" <?php \post_class(); ?>>
 							<td>
+								<?php echo \esc_html( null === $invoice ? '' : (string) $invoice->id ); ?>
+							</td>
+							<td>
+								<?php \the_ID(); ?>
+							</td>
+							<td>
 								<a href="<?php \the_permalink(); ?>"><?php \the_title(); ?></a>
 
 								<?php \get_template_part( 'templates/table-cell-comments' ); ?>
@@ -60,7 +69,7 @@ $siteground_invoices = Plugin::instance()->invoices->get_by_post_ids( \wp_list_p
 
 							<?php if ( null === $invoice ) : ?>
 
-								<td colspan="6"></td>
+								<td colspan="7"></td>
 
 							<?php else : ?>
 
@@ -84,6 +93,9 @@ $siteground_invoices = Plugin::instance()->invoices->get_by_post_ids( \wp_list_p
 								</td>
 								<td>
 									<?php echo \esc_html( null === $invoice->tax_scheme ? '' : Helpers::get_tax_scheme_label( $invoice->tax_scheme ) ); ?>
+								</td>
+								<td>
+									<?php Helpers::render_invoice_moneybird_status( $invoice ); ?>
 								</td>
 								<td>
 									<?php Helpers::render_invoice_pdf_link( $invoice ); ?>

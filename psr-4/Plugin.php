@@ -133,7 +133,7 @@ final class Plugin {
 	private function maybe_install(): void {
 		$db_version = \get_option( 'orbis_siteground_db_version' );
 
-		if ( '2.4.0' === $db_version ) {
+		if ( '2.5.1' === $db_version ) {
 			return;
 		}
 
@@ -143,7 +143,7 @@ final class Plugin {
 
 		\flush_rewrite_rules();
 
-		\update_option( 'orbis_siteground_db_version', '2.4.0' );
+		\update_option( 'orbis_siteground_db_version', '2.5.1' );
 	}
 
 	/**
@@ -263,6 +263,7 @@ final class Plugin {
 				next_billing_date DATETIME DEFAULT NULL,
 				billing_cycle SMALLINT(5) UNSIGNED DEFAULT NULL,
 				auto_renew TINYINT(1) DEFAULT NULL,
+				moneybird_project_id VARCHAR(32) DEFAULT NULL,
 				data LONGTEXT DEFAULT NULL,
 				first_seen_at DATETIME NOT NULL,
 				last_seen_at DATETIME NOT NULL,
@@ -329,12 +330,16 @@ final class Plugin {
 				tax_scheme VARCHAR(32) DEFAULT NULL,
 				data LONGTEXT DEFAULT NULL,
 				processed_at DATETIME DEFAULT NULL,
+				moneybird_id VARCHAR(32) DEFAULT NULL,
+				moneybird_status VARCHAR(16) DEFAULT NULL,
+				moneybird_at DATETIME DEFAULT NULL,
 				PRIMARY KEY  (id),
 				UNIQUE KEY file_sha256 (file_sha256),
 				UNIQUE KEY invoice_number (invoice_number),
 				UNIQUE KEY post_id (post_id),
 				KEY invoice_date (invoice_date),
-				KEY processed_at (processed_at)
+				KEY processed_at (processed_at),
+				KEY moneybird_status (moneybird_status)
 			) $charset_collate;
 			CREATE TABLE $wpdb->orbis_siteground_invoice_lines (
 				id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,

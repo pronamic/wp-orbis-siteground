@@ -21,7 +21,8 @@ final class InvoiceLineRepository {
 	/**
 	 * Get the lines of an invoice.
 	 *
-	 * The lines include the post ID of the account as `account_post_id`.
+	 * The lines include the post ID and the Moneybird project ID of the account
+	 * as `account_post_id` and `account_moneybird_project_id`.
 	 *
 	 * @param int $invoice_id Invoice ID.
 	 * @return object[]
@@ -34,7 +35,8 @@ final class InvoiceLineRepository {
 				"
 				SELECT
 					line.*,
-					account.post_id AS account_post_id
+					account.post_id AS account_post_id,
+					account.moneybird_project_id AS account_moneybird_project_id
 				FROM
 					$wpdb->orbis_siteground_invoice_lines AS line
 						LEFT JOIN

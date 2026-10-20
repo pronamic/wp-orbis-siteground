@@ -26,6 +26,8 @@ $items = [
 	\__( 'First seen', 'orbis-siteground' )    => Helpers::format_datetime( $website->first_seen_at ),
 	\__( 'Last seen', 'orbis-siteground' )     => Helpers::format_datetime( $website->last_seen_at ),
 	\__( 'Removed', 'orbis-siteground' )       => Helpers::format_datetime( $website->removed_at ),
+	\__( 'ID', 'orbis-siteground' )            => $website->id,
+	\__( 'Post ID', 'orbis-siteground' )       => $website->post_id,
 ];
 
 $items = \array_filter(

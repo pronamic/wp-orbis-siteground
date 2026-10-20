@@ -285,6 +285,34 @@ final class Helpers {
 	}
 
 	/**
+	 * Render the Moneybird ID of an invoice, linked to the purchase invoice in Moneybird, or its status when there is no ID.
+	 *
+	 * @param object $invoice Invoice.
+	 * @return void
+	 */
+	public static function render_invoice_moneybird_status( object $invoice ): void {
+		if ( null === $invoice->moneybird_id || '' === $invoice->moneybird_id ) {
+			echo \esc_html( MoneybirdService::get_status_label( $invoice->moneybird_status ) ?? '—' );
+
+			return;
+		}
+
+		$url = MoneybirdService::get_url( $invoice );
+
+		if ( null === $url ) {
+			echo \esc_html( (string) $invoice->moneybird_id );
+
+			return;
+		}
+
+		\printf(
+			'<a href="%s" target="_blank" rel="noopener">%s</a>',
+			\esc_url( $url ),
+			\esc_html( (string) $invoice->moneybird_id )
+		);
+	}
+
+	/**
 	 * Render the status badge of an invoice.
 	 *
 	 * @param object $invoice Invoice.

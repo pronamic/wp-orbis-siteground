@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-03T21:22:54+00:00\n"
-"PO-Revision-Date: 2026-10-04T13:41:12+00:00\n"
+"PO-Revision-Date: 2026-10-20T10:01:33+00:00\n"
 "Language: nl\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.9\n"
@@ -50,8 +50,8 @@ msgid "import SiteGround accounts"
 msgstr "importeer SiteGround-accounts"
 
 #: admin/page-comparison.php:53
-#: templates/archive-orbis_sg_account.php:35
-#: templates/archive-orbis_sg_website.php:35
+#: templates/archive-orbis_sg_account.php:37
+#: templates/archive-orbis_sg_website.php:37
 msgid "Name"
 msgstr "Naam"
 
@@ -61,28 +61,28 @@ msgstr "Orbis"
 
 #: admin/page-comparison.php:55
 #: psr-4/PostTypeController.php:48
-#: templates/account-details.php:69
-#: templates/archive-orbis_sg_account.php:40
-#: templates/archive-orbis_sg_website.php:40
-#: templates/website-details.php:52
+#: templates/account-details.php:72
+#: templates/archive-orbis_sg_account.php:42
+#: templates/archive-orbis_sg_website.php:42
+#: templates/website-details.php:54
 msgid "SiteGround"
 msgstr "SiteGround"
 
 #: admin/page-comparison.php:56
-#: psr-4/AdminController.php:255
-#: psr-4/AdminController.php:333
-#: psr-4/AdminController.php:409
-#: templates/account-details.php:64
-#: templates/archive-orbis_sg_account.php:36
-#: templates/archive-orbis_sg_invoice.php:36
-#: templates/archive-orbis_sg_website.php:37
-#: templates/invoice-details.php:54
-#: templates/website-details.php:42
+#: psr-4/AdminController.php:302
+#: psr-4/AdminController.php:380
+#: psr-4/AdminController.php:456
+#: templates/account-details.php:67
+#: templates/archive-orbis_sg_account.php:38
+#: templates/archive-orbis_sg_invoice.php:38
+#: templates/archive-orbis_sg_website.php:39
+#: templates/invoice-details.php:56
+#: templates/website-details.php:44
 msgid "Status"
 msgstr "Status"
 
 #: admin/page-import.php:24
-#: psr-4/AdminController.php:410
+#: psr-4/AdminController.php:457
 #: psr-4/PostTypeController.php:41
 msgid "Accounts"
 msgstr "Accounts"
@@ -126,13 +126,13 @@ msgid "SiteGround JSON file"
 msgstr "SiteGround JSON-bestand"
 
 #: admin/page-import.php:100
-#: psr-4/AdminController.php:103
+#: psr-4/AdminController.php:104
 msgid "Import"
 msgstr "Importeren"
 
 #: admin/page-import.php:114
 #: templates/account-invoices.php:32
-#: templates/archive-orbis_sg_invoice.php:37
+#: templates/archive-orbis_sg_invoice.php:39
 #: templates/invoice-details.php:26
 msgid "Date"
 msgstr "Datum"
@@ -146,9 +146,9 @@ msgid "User"
 msgstr "Gebruiker"
 
 #: admin/page-import.php:117
-#: psr-4/AdminController.php:411
+#: psr-4/AdminController.php:458
 #: templates/account-invoices.php:35
-#: templates/archive-orbis_sg_invoice.php:39
+#: templates/archive-orbis_sg_invoice.php:41
 #: templates/invoice-details.php:29
 #: templates/invoice-lines.php:38
 #: templates/invoice-lines.php:102
@@ -176,7 +176,7 @@ msgstr "Hersteld"
 #: admin/page-import.php:122
 #: psr-4/Helpers.php:104
 #: psr-4/Helpers.php:147
-#: templates/account-details.php:50
+#: templates/account-details.php:51
 #: templates/website-details.php:28
 msgid "Removed"
 msgstr "Verwijderd"
@@ -210,6 +210,12 @@ msgid "All uploaded invoices have been processed."
 msgstr "Alle geüploade facturen zijn verwerkt."
 
 #: admin/page-invoice-upload.php:87
+#: templates/account-details.php:52
+#: templates/archive-orbis_sg_account.php:35
+#: templates/archive-orbis_sg_invoice.php:35
+#: templates/archive-orbis_sg_website.php:35
+#: templates/invoice-details.php:41
+#: templates/website-details.php:29
 msgid "ID"
 msgstr "ID"
 
@@ -239,6 +245,56 @@ msgstr "Niet geëxtraheerd"
 #: admin/page-invoice-upload.php:104
 msgid "Extracted"
 msgstr "Geëxtraheerd"
+
+#: admin/page-moneybird.php:19
+msgid "API token"
+msgstr "API-token"
+
+#: admin/page-moneybird.php:21
+msgid "Personal API token from Moneybird, with access to the sales and purchase documents and settings."
+msgstr "Persoonlijke API-token van Moneybird, met toegang tot de verkoop- en inkoopdocumenten en instellingen."
+
+#: admin/page-moneybird.php:24
+msgid "Administration ID"
+msgstr "Administratie-ID"
+
+#: admin/page-moneybird.php:29
+msgid "SiteGround contact ID"
+msgstr "SiteGround-contact-ID"
+
+#: admin/page-moneybird.php:31
+msgid "Moneybird contact of SiteGround, the supplier of the purchase invoices."
+msgstr "Moneybird-contact van SiteGround, de leverancier van de inkoopfacturen."
+
+#: admin/page-moneybird.php:34
+msgid "Ledger account ID"
+msgstr "Grootboekrekening-ID"
+
+#: admin/page-moneybird.php:36
+msgid "Purchase ledger account of all invoice lines."
+msgstr "Inkoopgrootboekrekening van alle factuurregels."
+
+#: admin/page-moneybird.php:39
+msgid "Tax rate ID"
+msgstr "Btw-tarief-ID"
+
+#: admin/page-moneybird.php:41
+msgid "Purchase tax rate of all invoice lines."
+msgstr "Inkoop-btw-tarief van alle factuurregels."
+
+#: admin/page-moneybird.php:44
+msgid "Start date"
+msgstr "Startdatum"
+
+#: admin/page-moneybird.php:46
+msgid "Invoices dated before this date are not pushed to Moneybird."
+msgstr "Facturen met een datum vóór deze datum worden niet naar Moneybird gepusht."
+
+#. translators: %s: WP-CLI command
+#: admin/page-moneybird.php:59
+#, php-format
+msgid "SiteGround invoices are pushed to Moneybird as purchase invoices with WP-CLI. Run %s to check the settings and list the IDs to fill in."
+msgstr "SiteGround-facturen worden met WP-CLI als inkoopfacturen naar Moneybird gepusht. Voer %s uit om de instellingen te controleren en de in te vullen ID's te tonen."
 
 #: psr-4/AbilitiesController.php:77
 msgid "Abilities for working with SiteGround hosting accounts, websites and invoices in Orbis."
@@ -291,7 +347,7 @@ msgstr "Maximaal aantal accounts om terug te geven."
 
 #: psr-4/AbilitiesController.php:168
 #: psr-4/AbilitiesController.php:271
-#: psr-4/AbilitiesController.php:439
+#: psr-4/AbilitiesController.php:445
 msgid "Page of results to return."
 msgstr "Pagina met resultaten om terug te geven."
 
@@ -336,113 +392,121 @@ msgstr "HAL-links van de factuur. Elke link heeft een href en een titel die besc
 msgid "Unprocessed when the invoice data has not been registered yet with the update-invoice ability, processed otherwise."
 msgstr "Unprocessed als de factuurgegevens nog niet zijn geregistreerd met de update-invoice-ability, anders processed."
 
-#: psr-4/AbilitiesController.php:396
+#: psr-4/AbilitiesController.php:393
+msgid "Moneybird state: pushed (created as purchase invoice by Orbis), linked (already in Moneybird), skipped (never pushed) or null (not in Moneybird yet)."
+msgstr "Moneybird-status: pushed (door Orbis aangemaakt als inkoopfactuur), linked (al in Moneybird), skipped (wordt nooit gepusht) of null (nog niet in Moneybird)."
+
+#: psr-4/AbilitiesController.php:402
 msgid "Orbis ID of the SiteGround invoice (id of the search-invoices ability)."
 msgstr "Orbis-ID van de SiteGround-factuur (id van de search-invoices-ability)."
 
-#: psr-4/AbilitiesController.php:403
+#: psr-4/AbilitiesController.php:409
 #: psr-4/PostTypeController.php:119
 msgid "Search SiteGround invoices"
 msgstr "SiteGround-facturen zoeken"
 
-#: psr-4/AbilitiesController.php:404
+#: psr-4/AbilitiesController.php:410
 msgid "Searches the SiteGround invoice PDFs that are uploaded to Orbis, unprocessed invoices first and then newest first. An unprocessed invoice is a PDF that has been uploaded but whose data has not been registered yet: read it with the get-invoice ability and register the data with the update-invoice ability. Amounts are numeric strings, for example \"14.99\", in the currency of the invoice. The _links of each invoice point to the Orbis page and the original PDF."
 msgstr "Doorzoekt de SiteGround-factuur-PDF's die naar Orbis zijn geüpload, eerst de onverwerkte facturen en daarna de nieuwste eerst. Een onverwerkte factuur is een PDF die is geüpload, maar waarvan de gegevens nog niet zijn geregistreerd: lees deze met de get-invoice-ability en registreer de gegevens met de update-invoice-ability. Bedragen zijn numerieke strings, bijvoorbeeld \"14.99\", in de valuta van de factuur. De _links van elke factuur verwijzen naar de Orbis-pagina en de originele PDF."
 
-#: psr-4/AbilitiesController.php:412
+#: psr-4/AbilitiesController.php:418
 msgid "Search term, matched against the invoice number, the file name and all invoice data, for example the hosting account name (often a domain name) or product of an invoice line."
 msgstr "Zoekterm, vergeleken met het factuurnummer, de bestandsnaam en alle factuurgegevens, bijvoorbeeld de naam van het hostingaccount (vaak een domeinnaam) of het product van een factuurregel."
 
-#: psr-4/AbilitiesController.php:416
+#: psr-4/AbilitiesController.php:422
 msgid "Limit the results to unprocessed or processed invoices."
 msgstr "Beperk de resultaten tot onverwerkte of verwerkte facturen."
 
-#: psr-4/AbilitiesController.php:423
+#: psr-4/AbilitiesController.php:429
 msgid "Only return invoices dated on or after this date (YYYY-MM-DD)."
 msgstr "Alleen facturen met een datum op of na deze datum teruggeven (JJJJ-MM-DD)."
 
-#: psr-4/AbilitiesController.php:428
+#: psr-4/AbilitiesController.php:434
 msgid "Only return invoices dated before this date (YYYY-MM-DD)."
 msgstr "Alleen facturen met een datum vóór deze datum teruggeven (JJJJ-MM-DD)."
 
-#: psr-4/AbilitiesController.php:432
+#: psr-4/AbilitiesController.php:438
 msgid "Maximum number of invoices to return."
 msgstr "Maximaal aantal facturen om terug te geven."
 
-#: psr-4/AbilitiesController.php:477
+#: psr-4/AbilitiesController.php:483
 msgid "Get SiteGround invoice"
 msgstr "SiteGround-factuur ophalen"
 
-#: psr-4/AbilitiesController.php:478
+#: psr-4/AbilitiesController.php:484
 msgid "Gets a SiteGround invoice with the text that was extracted from the uploaded PDF, so the invoice can be analysed. The text is null when no text could be extracted, request the PDF itself with include_pdf in that case. The data contains the registered invoice data, null for an unprocessed invoice."
 msgstr "Haalt een SiteGround-factuur op met de tekst die uit de geüploade PDF is geëxtraheerd, zodat de factuur geanalyseerd kan worden. De tekst is null als er geen tekst geëxtraheerd kon worden, vraag in dat geval de PDF zelf op met include_pdf. De data bevat de geregistreerde factuurgegevens, null voor een onverwerkte factuur."
 
-#: psr-4/AbilitiesController.php:486
+#: psr-4/AbilitiesController.php:492
 msgid "Also return the original PDF file, base64 encoded."
 msgstr "Geef ook het originele PDF-bestand terug, base64-gecodeerd."
 
-#: psr-4/AbilitiesController.php:500
+#: psr-4/AbilitiesController.php:506
 msgid "Text extracted from the PDF."
 msgstr "Tekst geëxtraheerd uit de PDF."
 
-#: psr-4/AbilitiesController.php:504
+#: psr-4/AbilitiesController.php:510
 msgid "Registered invoice data, valid against the invoice schema of the update-invoice ability."
 msgstr "Geregistreerde factuurgegevens, geldig volgens het factuurschema van de update-invoice-ability."
 
-#: psr-4/AbilitiesController.php:508
+#: psr-4/AbilitiesController.php:514
 msgid "The original PDF file, base64 encoded, only when include_pdf is true."
 msgstr "Het originele PDF-bestand, base64-gecodeerd, alleen als include_pdf true is."
 
-#: psr-4/AbilitiesController.php:529
+#: psr-4/AbilitiesController.php:535
 msgid "Update SiteGround invoice"
 msgstr "SiteGround-factuur bijwerken"
 
-#: psr-4/AbilitiesController.php:530
+#: psr-4/AbilitiesController.php:536
 msgid "Registers the structured data of an uploaded SiteGround invoice PDF. First read the invoice with the get-invoice ability and extract the data exactly according to the invoice schema: copy values literally, use null for values that are not on the PDF and never guess. The data replaces the previously registered data of the invoice and marks the invoice as processed. An invoice number can only be registered for one invoice."
 msgstr "Registreert de gestructureerde gegevens van een geüploade SiteGround-factuur-PDF. Lees eerst de factuur met de get-invoice-ability en haal de gegevens exact volgens het factuurschema eruit: neem waarden letterlijk over, gebruik null voor waarden die niet op de PDF staan en gok nooit. De gegevens vervangen de eerder geregistreerde gegevens van de factuur en markeren de factuur als verwerkt. Een factuurnummer kan maar voor één factuur worden geregistreerd."
 
-#: psr-4/AbilitiesController.php:627
+#: psr-4/AbilitiesController.php:633
 msgid "Orbis page of this SiteGround account."
 msgstr "Orbis-pagina van dit SiteGround-account."
 
-#: psr-4/AbilitiesController.php:634
+#: psr-4/AbilitiesController.php:640
 msgid "This hosting account in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for the hosting plan, renewal and billing."
 msgstr "Dit hostingaccount in de SiteGround Client Area (my.siteground.com), de omgeving van het SiteGround-account voor het hostingpakket, verlenging en facturatie."
 
-#: psr-4/AbilitiesController.php:679
+#: psr-4/AbilitiesController.php:685
 msgid "Orbis page of this SiteGround website."
 msgstr "Orbis-pagina van deze SiteGround-website."
 
-#: psr-4/AbilitiesController.php:685
+#: psr-4/AbilitiesController.php:691
 msgid "This website in the SiteGround Client Area (my.siteground.com), the environment of the SiteGround account for websites, services and billing."
 msgstr "Deze website in de SiteGround Client Area (my.siteground.com), de omgeving van het SiteGround-account voor websites, diensten en facturatie."
 
-#: psr-4/AbilitiesController.php:690
+#: psr-4/AbilitiesController.php:696
 msgid "SiteGround Site Tools (tools.siteground.com) of this website, the environment for managing the website itself: files, databases, email, DNS, SSL, caching, backups and WordPress."
 msgstr "SiteGround Site Tools (tools.siteground.com) van deze website, de omgeving voor het beheren van de website zelf: bestanden, databases, e-mail, DNS, SSL, caching, back-ups en WordPress."
 
-#: psr-4/AbilitiesController.php:696
+#: psr-4/AbilitiesController.php:702
 msgid "Admin dashboard of the CMS of this website, for example the WordPress admin."
 msgstr "Beheeromgeving van het CMS van deze website, bijvoorbeeld de WordPress-admin."
 
-#: psr-4/AbilitiesController.php:752
-#: psr-4/AdminController.php:480
+#: psr-4/AbilitiesController.php:758
+#: psr-4/AdminController.php:532
 #: psr-4/InvoiceService.php:164
 msgid "SiteGround invoice not found."
 msgstr "SiteGround-factuur niet gevonden."
 
-#: psr-4/AbilitiesController.php:767
-#: psr-4/AdminController.php:488
+#: psr-4/AbilitiesController.php:773
+#: psr-4/AdminController.php:540
 msgid "SiteGround invoice PDF not found."
 msgstr "PDF van SiteGround-factuur niet gevonden."
 
-#: psr-4/AbilitiesController.php:841
+#: psr-4/AbilitiesController.php:849
 msgid "Orbis page of this SiteGround invoice."
 msgstr "Orbis-pagina van deze SiteGround-factuur."
 
-#: psr-4/AbilitiesController.php:847
+#: psr-4/AbilitiesController.php:855
 msgid "Original PDF of this SiteGround invoice, only accessible when logged in to Orbis."
 msgstr "Originele PDF van deze SiteGround-factuur, alleen toegankelijk wanneer ingelogd in Orbis."
+
+#: psr-4/AbilitiesController.php:863
+msgid "Purchase invoice of this SiteGround invoice in Moneybird."
+msgstr "Inkoopfactuur van deze SiteGround-factuur in Moneybird."
 
 #: psr-4/AccountImporter.php:48
 msgid "The JSON does not contain any SiteGround accounts."
@@ -452,69 +516,80 @@ msgstr "De JSON bevat geen enkel SiteGround-account."
 msgid "Every SiteGround account must have an `id` and a `name`."
 msgstr "Elk SiteGround-account moet een `id` en een `name` hebben."
 
-#: psr-4/AdminController.php:102
+#: psr-4/AdminController.php:103
 msgid "Import SiteGround data"
 msgstr "SiteGround-gegevens importeren"
 
-#: psr-4/AdminController.php:111
+#: psr-4/AdminController.php:112
 msgid "Orbis SiteGround comparison"
 msgstr "Orbis SiteGround-vergelijking"
 
-#: psr-4/AdminController.php:112
+#: psr-4/AdminController.php:113
 msgid "Comparison"
 msgstr "Vergelijking"
 
-#: psr-4/AdminController.php:120
+#: psr-4/AdminController.php:121
 msgid "Upload SiteGround invoices"
 msgstr "SiteGround-facturen uploaden"
 
-#: psr-4/AdminController.php:121
+#: psr-4/AdminController.php:122
 msgid "Upload invoices"
 msgstr "Facturen uploaden"
 
-#: psr-4/AdminController.php:256
+#: psr-4/AdminController.php:130
+msgid "Moneybird settings"
+msgstr "Moneybird-instellingen"
+
+#: psr-4/AdminController.php:131
+#: psr-4/AdminController.php:460
+#: templates/archive-orbis_sg_invoice.php:43
+#: templates/invoice-details.php:66
+msgid "Moneybird"
+msgstr "Moneybird"
+
+#: psr-4/AdminController.php:303
 #: templates/account-details.php:36
-#: templates/archive-orbis_sg_account.php:37
+#: templates/archive-orbis_sg_account.php:39
 msgid "Plan"
 msgstr "Pakket"
 
-#: psr-4/AdminController.php:257
-#: psr-4/AdminController.php:335
+#: psr-4/AdminController.php:304
+#: psr-4/AdminController.php:382
 #: templates/account-details.php:38
-#: templates/archive-orbis_sg_account.php:38
-#: templates/archive-orbis_sg_website.php:39
+#: templates/archive-orbis_sg_account.php:40
+#: templates/archive-orbis_sg_website.php:41
 #: templates/website-details.php:21
 msgid "Server"
 msgstr "Server"
 
-#: psr-4/AdminController.php:258
+#: psr-4/AdminController.php:305
 #: templates/account-details.php:42
-#: templates/archive-orbis_sg_account.php:39
+#: templates/archive-orbis_sg_account.php:41
 msgid "Expires"
 msgstr "Verloopt"
 
-#: psr-4/AdminController.php:332
-#: templates/archive-orbis_sg_website.php:36
+#: psr-4/AdminController.php:379
+#: templates/archive-orbis_sg_website.php:38
 #: templates/invoice-lines.php:34
-#: templates/website-details.php:47
+#: templates/website-details.php:49
 msgid "Account"
 msgstr "Account"
 
-#: psr-4/AdminController.php:334
-#: templates/archive-orbis_sg_website.php:38
+#: psr-4/AdminController.php:381
+#: templates/archive-orbis_sg_website.php:40
 #: templates/website-details.php:20
 msgid "CMS"
 msgstr "CMS"
 
-#: psr-4/AdminController.php:412
+#: psr-4/AdminController.php:459
 #: psr-4/Helpers.php:283
 #: templates/account-invoices.php:36
-#: templates/archive-orbis_sg_invoice.php:41
-#: templates/invoice-details.php:59
+#: templates/archive-orbis_sg_invoice.php:44
+#: templates/invoice-details.php:61
 msgid "PDF"
 msgstr "PDF"
 
-#: psr-4/AdminController.php:471
+#: psr-4/AdminController.php:523
 msgid "You are not allowed to view SiteGround invoices."
 msgstr "Je hebt geen toestemming om SiteGround-facturen te bekijken."
 
@@ -558,58 +633,58 @@ msgstr "Client Area"
 msgid "Site Tools"
 msgstr "Site Tools"
 
-#: psr-4/Helpers.php:297
+#: psr-4/Helpers.php:325
 #: templates/invoice-details.php:40
 msgid "Processed"
 msgstr "Verwerkt"
 
-#: psr-4/Helpers.php:303
+#: psr-4/Helpers.php:331
 msgid "Unprocessed"
 msgstr "Onverwerkt"
 
-#: psr-4/Helpers.php:427
+#: psr-4/Helpers.php:455
 #: templates/account-invoices.php:31
-#: templates/archive-orbis_sg_invoice.php:35
+#: templates/archive-orbis_sg_invoice.php:37
 msgid "Invoice"
 msgstr "Factuur"
 
-#: psr-4/Helpers.php:428
+#: psr-4/Helpers.php:456
 msgid "Credit note"
 msgstr "Creditnota"
 
-#: psr-4/Helpers.php:442
+#: psr-4/Helpers.php:470
 msgid "Standard"
 msgstr "Standaard"
 
-#: psr-4/Helpers.php:443
+#: psr-4/Helpers.php:471
 msgid "Reverse charge"
 msgstr "Btw verlegd"
 
-#: psr-4/Helpers.php:444
+#: psr-4/Helpers.php:472
 msgid "Exempt"
 msgstr "Vrijgesteld"
 
-#: psr-4/Helpers.php:445
+#: psr-4/Helpers.php:473
 msgid "None"
 msgstr "Geen"
 
-#: psr-4/Helpers.php:459
+#: psr-4/Helpers.php:487
 msgid "New"
 msgstr "Nieuw"
 
-#: psr-4/Helpers.php:460
+#: psr-4/Helpers.php:488
 msgid "Renewal"
 msgstr "Verlenging"
 
-#: psr-4/Helpers.php:461
+#: psr-4/Helpers.php:489
 msgid "Upgrade"
 msgstr "Upgrade"
 
-#: psr-4/Helpers.php:462
+#: psr-4/Helpers.php:490
 msgid "Add-on"
 msgstr "Add-on"
 
-#: psr-4/Helpers.php:463
+#: psr-4/Helpers.php:491
 msgid "Other"
 msgstr "Overig"
 
@@ -669,14 +744,28 @@ msgstr "De factuurdatum is geen geldige JJJJ-MM-DD-datum."
 msgid "Invoice number %1$s is already registered for SiteGround invoice %2$d."
 msgstr "Factuurnummer %1$s is al geregistreerd voor SiteGround-factuur %2$d."
 
+#: psr-4/InvoiceService.php:246
+msgid "The invoice has no extracted PDF text."
+msgstr "De factuur heeft geen geëxtraheerde PDF-tekst."
+
+#: psr-4/InvoiceService.php:276
+msgid "The AI response is not a JSON object."
+msgstr "Het AI-antwoord is geen JSON-object."
+
+#. translators: %s: validation error
+#: psr-4/InvoiceService.php:285
+#, php-format
+msgid "The AI response does not match the invoice schema: %s"
+msgstr "Het AI-antwoord komt niet overeen met het factuurschema: %s"
+
 #. translators: %s: amount
-#: psr-4/InvoiceService.php:437
+#: psr-4/InvoiceService.php:497
 #, php-format
 msgid "The amount \"%s\" is not a numeric string."
 msgstr "Het bedrag \"%s\" is geen numerieke string."
 
 #. translators: %s: invoice number
-#: psr-4/InvoiceService.php:470
+#: psr-4/InvoiceService.php:530
 #, php-format
 msgid "SiteGround invoice %s"
 msgstr "SiteGround-factuur %s"
@@ -702,6 +791,18 @@ msgstr "\"%s\" is geüpload."
 #, php-format
 msgid "\"%s\" was already uploaded."
 msgstr "\"%s\" was al geüpload."
+
+#: psr-4/MoneybirdService.php:90
+msgid "Purchase invoice created by Orbis"
+msgstr "Inkoopfactuur aangemaakt door Orbis"
+
+#: psr-4/MoneybirdService.php:91
+msgid "Linked to existing purchase invoice"
+msgstr "Gekoppeld aan bestaande inkoopfactuur"
+
+#: psr-4/MoneybirdService.php:92
+msgid "Skipped, not pushed to Moneybird"
+msgstr "Overgeslagen, niet naar Moneybird gepusht"
 
 #: psr-4/PostTypeController.php:37
 msgid "SiteGround accounts"
@@ -879,21 +980,34 @@ msgid "SiteGround ID"
 msgstr "SiteGround-ID"
 
 #: templates/account-details.php:48
+msgid "Moneybird project"
+msgstr "Moneybird-project"
+
+#: templates/account-details.php:49
 #: templates/website-details.php:26
 msgid "First seen"
 msgstr "Eerst gezien"
 
-#: templates/account-details.php:49
+#: templates/account-details.php:50
 #: templates/website-details.php:27
 msgid "Last seen"
 msgstr "Laatst gezien"
 
-#: templates/account-details.php:60
+#: templates/account-details.php:53
+#: templates/archive-orbis_sg_account.php:36
+#: templates/archive-orbis_sg_invoice.php:36
+#: templates/archive-orbis_sg_website.php:36
+#: templates/invoice-details.php:42
+#: templates/website-details.php:30
+msgid "Post ID"
+msgstr "Bericht-ID"
+
+#: templates/account-details.php:63
 msgid "SiteGround account"
 msgstr "SiteGround-account"
 
 #: templates/account-invoices.php:33
-#: templates/archive-orbis_sg_invoice.php:38
+#: templates/archive-orbis_sg_invoice.php:40
 #: templates/invoice-lines.php:30
 msgid "Description"
 msgstr "Omschrijving"
@@ -910,7 +1024,7 @@ msgstr "Periode"
 msgid "%1$s – %2$s"
 msgstr "%1$s – %2$s"
 
-#: templates/archive-orbis_sg_invoice.php:40
+#: templates/archive-orbis_sg_invoice.php:42
 #: templates/invoice-details.php:28
 #: templates/invoice-lines.php:37
 #: templates/invoice-lines.php:98
@@ -959,7 +1073,7 @@ msgstr "Btw-nummer klant"
 msgid "SHA-256"
 msgstr "SHA-256"
 
-#: templates/invoice-details.php:50
+#: templates/invoice-details.php:52
 msgid "SiteGround invoice"
 msgstr "SiteGround-factuur"
 
@@ -992,10 +1106,10 @@ msgstr "PDF openen"
 msgid "SiteGround invoice PDF text"
 msgstr "Tekst van SiteGround-factuur-PDF"
 
-#: templates/website-details.php:38
+#: templates/website-details.php:40
 msgid "SiteGround website"
 msgstr "SiteGround-website"
 
-#: templates/website-details.php:59
+#: templates/website-details.php:61
 msgid "Admin URL"
 msgstr "Beheer-URL"

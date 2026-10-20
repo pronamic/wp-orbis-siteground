@@ -45,9 +45,12 @@ $items = [
 	\__( 'Billing cycle', 'orbis-siteground' )     => $billing_cycle,
 	\__( 'Auto renew', 'orbis-siteground' )        => $auto_renew,
 	\__( 'SiteGround ID', 'orbis-siteground' )     => $account->siteground_id,
+	\__( 'Moneybird project', 'orbis-siteground' ) => $account->moneybird_project_id,
 	\__( 'First seen', 'orbis-siteground' )        => Helpers::format_datetime( $account->first_seen_at ),
 	\__( 'Last seen', 'orbis-siteground' )         => Helpers::format_datetime( $account->last_seen_at ),
 	\__( 'Removed', 'orbis-siteground' )           => Helpers::format_datetime( $account->removed_at ),
+	\__( 'ID', 'orbis-siteground' )                => $account->id,
+	\__( 'Post ID', 'orbis-siteground' )           => $account->post_id,
 ];
 
 $items = \array_filter(

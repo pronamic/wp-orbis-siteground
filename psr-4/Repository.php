@@ -27,6 +27,26 @@ abstract class Repository {
 	abstract protected function get_table(): string;
 
 	/**
+	 * Get item by ID.
+	 *
+	 * @param int $id Item ID.
+	 * @return object|null
+	 */
+	public function get_by_id( int $id ): ?object {
+		global $wpdb;
+
+		$table = $this->get_table();
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name.
+				"SELECT * FROM $table WHERE id = %d;",
+				$id
+			)
+		);
+	}
+
+	/**
 	 * Get item by SiteGround ID.
 	 *
 	 * @param string $siteground_id SiteGround ID.

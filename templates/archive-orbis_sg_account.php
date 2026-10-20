@@ -32,6 +32,8 @@ $siteground_accounts = Plugin::instance()->accounts->get_by_post_ids( \wp_list_p
 			<table class="table table-striped table-condense table-hover">
 				<thead>
 					<tr>
+						<th><?php \esc_html_e( 'ID', 'orbis-siteground' ); ?></th>
+						<th><?php \esc_html_e( 'Post ID', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Name', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Status', 'orbis-siteground' ); ?></th>
 						<th><?php \esc_html_e( 'Plan', 'orbis-siteground' ); ?></th>
@@ -51,6 +53,12 @@ $siteground_accounts = Plugin::instance()->accounts->get_by_post_ids( \wp_list_p
 						?>
 
 						<tr id="post-<?php \the_ID(); ?>" <?php \post_class(); ?>>
+							<td>
+								<?php echo \esc_html( null === $account ? '' : (string) $account->id ); ?>
+							</td>
+							<td>
+								<?php \the_ID(); ?>
+							</td>
 							<td>
 								<a href="<?php \the_permalink(); ?>"><?php \the_title(); ?></a>
 
